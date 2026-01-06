@@ -23,7 +23,7 @@
     </appender>
 
     <!-- Custom appender for flow execution logs that sends to WebSocket -->
-    <appender name="FLOW_EXECUTION_WEBSOCKET" class="com.testautomation.orchestrator.logging.FlowExecutionLogAppender"/>
+    <appender name="FLOW_EXECUTION_WEBSOCKET" class="com.ubs.orkestra.logging.FlowExecutionLogAppender"/>
     
     <!-- Root logger -->
     <root level="INFO">
@@ -38,14 +38,14 @@
     </logger>
     
     <!-- Flow execution specific logger -->
-    <logger name="com.testautomation.orchestrator.service.FlowExecutionService" level="DEBUG" additivity="false">
+    <logger name="com.ubs.orkestra.service.FlowExecutionService" level="DEBUG" additivity="false">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="FILE"/>
         <appender-ref ref="FLOW_EXECUTION_WEBSOCKET"/>
     </logger>
     
     <!-- Pipeline execution specific logger -->
-    <logger name="com.testautomation.orchestrator.service.PipelineExecutionService" level="DEBUG" additivity="false">
+    <logger name="com.ubs.orkestra.service.PipelineExecutionService" level="DEBUG" additivity="false">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="FILE"/>
     </logger>

@@ -4,18 +4,201 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="86feebe4-af2c-4f74-950e-17ffe9c189e4" name="Changes" comment="Enhancement with groups">
+    <list default="true" id="c65a6451-06e0-4034-ad26-8590dcd9c87f" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/controller/FlowExecutionController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/controller/FlowExecutionController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/controller/FlowGroupController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/controller/FlowGroupController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/dto/FlowExecutionDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/dto/FlowExecutionDto.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/dto/FlowGroupDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/dto/FlowGroupDto.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/model/FlowExecution.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/model/FlowExecution.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/model/FlowGroup.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/model/FlowGroup.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/repository/FlowExecutionRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/repository/FlowExecutionRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/service/FlowExecutionService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/service/FlowExecutionService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/service/FlowGroupService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/service/FlowGroupService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/pipeline-orchestrator.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/PipelineOrchestratorApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/OrkestraV2ApiApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/config/AsyncConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/config/AsyncConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/config/CorsConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/config/CorsConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/config/GitLabConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/config/GitLabConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/config/OpenApiConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/config/OpenApiConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/config/WebSocketConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/config/WebSocketConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/controller/AnalyticsController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/controller/AnalyticsController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/controller/ApplicationController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/controller/ApplicationController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/controller/FlowController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/controller/FlowController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/controller/FlowExecutionController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/controller/FlowExecutionController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/controller/FlowGroupController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/controller/FlowGroupController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/controller/FlowStepController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/controller/FlowStepController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/controller/PipelineExecutionController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/controller/PipelineExecutionController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/controller/TestDataController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/controller/TestDataController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/dto/ApplicationDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/dto/ApplicationDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/dto/BranchDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/dto/BranchDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/dto/CombinedFlowDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/dto/CombinedFlowDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/dto/CombinedFlowStepDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/dto/CombinedFlowStepDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/dto/DelayDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/dto/DelayDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/dto/FlowCreateDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/dto/FlowCreateDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/dto/FlowDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/dto/FlowDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/dto/FlowExecutionDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/dto/FlowExecutionDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/dto/FlowGroupCreateDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/dto/FlowGroupCreateDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/dto/FlowGroupDetailsDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/dto/FlowGroupDetailsDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/dto/FlowGroupDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/dto/FlowGroupDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/dto/FlowGroupUpdateDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/dto/FlowGroupUpdateDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/dto/FlowStepCreateDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/dto/FlowStepCreateDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/dto/FlowStepDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/dto/FlowStepDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/dto/FlowTestCaseAssociationDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/dto/FlowTestCaseAssociationDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/dto/InvokeSchedulerDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/dto/InvokeSchedulerDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/dto/InvokeTimerDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/dto/InvokeTimerDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/dto/PipelineExecutionDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/dto/PipelineExecutionDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/dto/TestDataDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/dto/TestDataDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/dto/TimerDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/dto/TimerDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/dto/ValidationRequestDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/dto/ValidationRequestDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/dto/ValidationResponseDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/dto/ValidationResponseDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/dto/analytics/DurationStatsDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/dto/analytics/DurationStatsDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/dto/analytics/ExecutionStatsDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/dto/analytics/ExecutionStatsDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/dto/analytics/FailureAnalysisDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/dto/analytics/FailureAnalysisDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/dto/analytics/MetricsSummaryDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/dto/analytics/MetricsSummaryDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/dto/analytics/TrendDataDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/dto/analytics/TrendDataDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/enums/ExecutionStatus.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/enums/ExecutionStatus.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/enums/TokenStatus.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/enums/TokenStatus.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/exception/GitLabValidationException.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/exception/GitLabValidationException.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/exception/GlobalExceptionHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/exception/GlobalExceptionHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/logging/FlowExecutionLogAppender.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/logging/FlowExecutionLogAppender.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/model/Application.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/model/Application.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/model/Delay.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/model/Delay.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/model/Flow.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/model/Flow.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/model/FlowExecution.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/model/FlowExecution.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/model/FlowGroup.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/model/FlowGroup.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/model/FlowStep.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/model/FlowStep.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/model/InvokeScheduler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/model/InvokeScheduler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/model/InvokeTimer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/model/InvokeTimer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/model/PipelineExecution.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/model/PipelineExecution.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/model/TestData.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/model/TestData.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/model/Timer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/model/Timer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/repository/ApplicationRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/repository/ApplicationRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/repository/FlowExecutionRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/repository/FlowExecutionRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/repository/FlowGroupRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/repository/FlowGroupRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/repository/FlowRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/repository/FlowRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/repository/FlowStepRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/repository/FlowStepRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/repository/PipelineExecutionRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/repository/PipelineExecutionRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/repository/TestDataRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/repository/TestDataRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/service/AnalyticsService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/service/AnalyticsService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/service/ApplicationService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/service/ApplicationService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/service/CombinedFlowService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/service/CombinedFlowService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/service/CombinedFlowStepService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/service/CombinedFlowStepService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/service/EncryptionService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/service/EncryptionService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/service/FlowExecutionService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/service/FlowExecutionService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/service/FlowGroupService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/service/FlowGroupService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/service/FlowService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/service/FlowService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/service/FlowStepService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/service/FlowStepService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/service/PipelineExecutionService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/service/PipelineExecutionService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/service/PipelineExecutionTxService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/service/PipelineExecutionTxService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/service/SchedulingService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/service/SchedulingService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/service/TestDataService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/service/TestDataService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/service/TokenValidationScheduler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/service/TokenValidationScheduler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/util/GitLabApiClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/util/GitLabApiClient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/util/OutputEnvParser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/util/OutputEnvParser.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/validator/InvokeSchedulerValidator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/validator/InvokeSchedulerValidator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/validator/InvokeTimerValidator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/validator/InvokeTimerValidator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/validator/ValidInvokeScheduler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/validator/ValidInvokeScheduler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/validator/ValidInvokeTimer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/validator/ValidInvokeTimer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/testautomation/orchestrator/websocket/FlowLogWebSocketHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ubs/orkestra/websocket/FlowLogWebSocketHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/logback-spring.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/logback-spring.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/com/testautomation/orchestrator/PipelineOrchestratorApplicationTests.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/com/ubs/orkestra/OrkestraV2ApiApplicationTests.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/com/testautomation/orchestrator/util/OutputEnvParserTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/com/ubs/orkestra/util/OutputEnvParserTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/PipelineOrchestratorApplication.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/config/AsyncConfig.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/config/CorsConfig.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/config/GitLabConfig.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/config/OpenApiConfig.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/config/WebSocketConfig.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/controller/AnalyticsController.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/controller/ApplicationController.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/controller/FlowController.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/controller/FlowExecutionController.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/controller/FlowGroupController.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/controller/FlowStepController.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/controller/PipelineExecutionController.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/controller/TestDataController.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/dto/ApplicationDto.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/dto/BranchDto$Commit.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/dto/BranchDto.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/dto/CombinedFlowDto.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/dto/CombinedFlowStepDto.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/dto/DelayDto.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/dto/FlowCreateDto.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/dto/FlowDto.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/dto/FlowExecutionDto.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/dto/FlowGroupCreateDto.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/dto/FlowGroupDetailsDto$FlowSummaryDto.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/dto/FlowGroupDetailsDto.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/dto/FlowGroupDto.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/dto/FlowGroupUpdateDto.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/dto/FlowStepCreateDto.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/dto/FlowStepDto.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/dto/FlowTestCaseAssociationDto.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/dto/InvokeSchedulerDto.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/dto/InvokeTimerDto.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/dto/PipelineExecutionDto.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/dto/TestDataDto.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/dto/TimerDto.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/dto/ValidationRequestDto.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/dto/ValidationResponseDto.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/dto/analytics/DurationStatsDto.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/dto/analytics/ExecutionStatsDto.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/dto/analytics/FailureAnalysisDto.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/dto/analytics/MetricsSummaryDto.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/dto/analytics/TrendDataDto.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/enums/ExecutionStatus.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/enums/TokenStatus.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/exception/GitLabValidationException.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/exception/GlobalExceptionHandler$ErrorResponse.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/exception/GlobalExceptionHandler.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/logging/FlowExecutionLogAppender.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/model/Application.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/model/Delay.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/model/Flow.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/model/FlowExecution.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/model/FlowGroup.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/model/FlowStep.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/model/InvokeScheduler.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/model/InvokeTimer.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/model/PipelineExecution.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/model/TestData.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/model/Timer.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/repository/ApplicationRepository.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/repository/FlowExecutionRepository.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/repository/FlowGroupRepository.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/repository/FlowRepository.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/repository/FlowStepRepository.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/repository/PipelineExecutionRepository.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/repository/TestDataRepository.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/service/AnalyticsService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/service/ApplicationService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/service/CombinedFlowService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/service/CombinedFlowStepService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/service/EncryptionService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/service/FlowExecutionService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/service/FlowGroupService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/service/FlowService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/service/FlowStepService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/service/PipelineExecutionService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/service/PipelineExecutionTxService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/service/SchedulingService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/service/TestDataService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/service/TokenValidationScheduler.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/util/GitLabApiClient$GitLabBranchResponse.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/util/GitLabApiClient$GitLabCommit.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/util/GitLabApiClient$GitLabJobsResponse.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/util/GitLabApiClient$GitLabPipelineRequest.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/util/GitLabApiClient$GitLabPipelineResponse.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/util/GitLabApiClient$GitLabProjectResponse.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/util/GitLabApiClient$GitLabVariable.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/util/GitLabApiClient.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/util/OutputEnvParser.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/validator/InvokeSchedulerValidator.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/validator/InvokeTimerValidator.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/validator/ValidInvokeScheduler.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/validator/ValidInvokeTimer.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/testautomation/orchestrator/websocket/FlowLogWebSocketHandler.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/logback-spring.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/logback-spring.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/createdFiles.lst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/inputFiles.lst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/application-test.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/testautomation/orchestrator/PipelineOrchestratorApplicationTests.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/testautomation/orchestrator/util/OutputEnvParserTest.class" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -24,41 +207,54 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
-    <option name="SET_USER_NAME_GLOBALLY" value="false" />
   </component>
-  <component name="GitHubPullRequestSearchHistory">{
-  &quot;lastFilter&quot;: {
-    &quot;state&quot;: &quot;OPEN&quot;,
-    &quot;assignee&quot;: &quot;SiddharthMishra28&quot;
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "SiddharthMishra28"
   }
-}</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/SiddharthMishra28/flow-forge-v1-groups.git&quot;,
-    &quot;accountId&quot;: &quot;744324da-da56-4e54-86ef-3a0720358005&quot;
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/SiddharthMishra28/flow-forge-v1-groups.git",
+    "accountId": "744324da-da56-4e54-86ef-3a0720358005"
   }
-}</component>
-  <component name="ProjectColorInfo">{
-  &quot;associatedIndex&quot;: 2
-}</component>
-  <component name="ProjectId" id="37q9GKE3zYDE1oEyOh4agDUUE4Q" />
+}]]></component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 2
+}]]></component>
+  <component name="ProjectId" id="37tVDzuN6ZHBm2VYzplkSsiWvmx" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "Application.OrkestraV2ApiApplication.executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "ignore.virus.scanning.warn.message": "true",
+    "git-widget-placeholder": "main",
     "junie.onboarding.icon.badge.shown": "true",
     "kotlin-language-version-configured": "true",
     "to.speed.mode.migration.done": "true"
   }
 }]]></component>
   <component name="RunManager">
+    <configuration name="OrkestraV2ApiApplication" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="com.ubs.orkestra.OrkestraV2ApiApplication" />
+      <module name="pipeline-orchestrator" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.ubs.orkestra.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration default="true" type="JetRunConfigurationType">
       <module name="flow-forge-git-current" />
       <method v="2">
@@ -66,43 +262,24 @@
       </method>
     </configuration>
     <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
-      <module name="pipeline-orchestrator" />
+      <module name="flow-forge-git-current" />
       <option name="filePath" />
       <method v="2" />
     </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Application.OrkestraV2ApiApplication" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="86feebe4-af2c-4f74-950e-17ffe9c189e4" name="Changes" comment="" />
-      <created>1767619636383</created>
+      <changelist id="c65a6451-06e0-4034-ad26-8590dcd9c87f" name="Changes" comment="" />
+      <created>1767722238602</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1767619636383</updated>
+      <updated>1767722238602</updated>
     </task>
-    <task id="LOCAL-00001" summary="Enhancement with groups">
-      <option name="closed" value="true" />
-      <created>1767637149943</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1767637149943</updated>
-    </task>
-    <option name="localTasksCounter" value="2" />
     <servers />
-  </component>
-  <component name="Vcs.Log.Tabs.Properties">
-    <option name="TAB_STATES">
-      <map>
-        <entry key="MAIN">
-          <value>
-            <State />
-          </value>
-        </entry>
-      </map>
-    </option>
-  </component>
-  <component name="VcsManagerConfiguration">
-    <MESSAGE value="Enhancement with groups" />
-    <option name="LAST_COMMIT_MESSAGE" value="Enhancement with groups" />
   </component>
 </project>

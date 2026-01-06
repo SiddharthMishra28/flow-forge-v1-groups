@@ -1,6 +1,9 @@
-# FlowForge: E2E Test Automation Orchestrator
+# Orkestra: E2E Test Automation Orchestrator
 
-**FlowForge** is a powerful, open-source Spring Boot 3.x application designed to orchestrate End-to-End (E2E) Test Automation pipelines. It provides a robust platform to manage, execute, and monitor complex testing workflows, with seamless integration with GitLab pipelines.
+**Orkestra** is a powerful, open-source Spring Boot 3.x application designed to orchestrate End-to-End (E2E) Test Automation pipelines. It provides a robust platform to manage, execute, and monitor complex testing workflows, with seamless integration with GitLab pipelines.
+
+### Developers
+1. [Siddharth Mishra](mailto:siddharth.mishra@ubs.com)
 
 ## 🌟 Key Features
 
@@ -18,7 +21,7 @@
 
 ## 🏗️ System Architecture
 
-FlowForge is built on a modular, scalable architecture designed for high performance and maintainability.
+Orkestra is built on a modular, scalable architecture designed for high performance and maintainability.
 
 ### Core Components
 
@@ -53,7 +56,7 @@ FlowForge is built on a modular, scalable architecture designed for high perform
 
 ## 🛠️ Getting Started: A Beginner's Guide
 
-This guide will walk you through setting up and running your first E2E test flow with FlowForge.
+This guide will walk you through setting up and running your first E2E test flow with Orkestra.
 
 ### 1. Clone and Build
 
@@ -83,7 +86,7 @@ Once started, you can access the following:
 
 ### 3. Configure Your First Application
 
-Before creating a flow, you need to register your GitLab project with FlowForge.
+Before creating a flow, you need to register your GitLab project with Orkestra.
 
 **Endpoint**: `POST /api/applications`
 
@@ -812,7 +815,7 @@ POST /api/flows
 
 ## ⏰ Smart Scheduling System
 
-FlowForge includes a sophisticated, memory-optimized scheduling system that allows you to introduce delays between flow steps without consuming system resources.
+Orkestra includes a sophisticated, memory-optimized scheduling system that allows you to introduce delays between flow steps without consuming system resources.
 
 ### How It Works
 
@@ -898,7 +901,7 @@ For **scheduled** type:
 
 ## 🚨 Failure Handling
 
-FlowForge implements intelligent failure handling to prevent resource waste and ensure reliable test execution:
+Orkestra implements intelligent failure handling to prevent resource waste and ensure reliable test execution:
 
 ### Automatic Flow Termination
 
@@ -1256,4 +1259,4 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 
 ---
 
-**FlowForge v4.0** - Orchestrating seamless E2E test automation workflows with enhanced efficiency, intelligent resource management, powerful multi-flow execution capabilities, FlowGroup orchestration with iteration tracking, and advanced filtering and search capabilities.
+**Orkestra v4.0** - Orchestrating seamless E2E test automation workflows with enhanced efficiency, intelligent resource management, powerful multi-flow execution capabilities, FlowGroup orchestration with iteration tracking, and advanced filtering and search capabilities.
