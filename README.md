@@ -26,9 +26,10 @@ FlowForge is built on a modular, scalable architecture designed for high perform
 2.  **TestData**: A flexible key-value store for test data associated with an `Application` and `applicationName`. Each `TestData` entity can be categorized for better organization (e.g., `API_CREDENTIALS`, `USER_PROFILES`).
 3.  **FlowStep**: An individual, executable step within a flow. It is linked to an `Application` and defines the GitLab pipeline branch, test tag, test stage, and optional timer configuration for delayed execution. The `testTag` value is injected as a `testTag` environment variable in the GitLab pipeline.
 4.  **Flow**: An ordered sequence of `FlowSteps` that represents a complete E2E test scenario with squash test case integration (`squashTestCaseId` and `squashTestCase`).
-5.  **FlowExecution**: A runtime instance of a `Flow`, capturing its state (`RUNNING`, `PASSED`, `FAILED`, `SCHEDULED`), start/end times, and the aggregated runtime variables.
-6.  **PipelineExecution**: Represents the execution of a single GitLab pipeline within a `FlowExecution`, tracking its status, scheduled resume time, and associated logs.
-7.  **SchedulingService**: Memory-optimized background service that manages delayed step executions using database persistence instead of active polling.
+5.  **FlowGroup**: A collection of `Flow`s that can be executed in parallel, with iteration tracking and revolution counting for execution metrics.
+6.  **FlowExecution**: A runtime instance of a `Flow`, capturing its state (`RUNNING`, `PASSED`, `FAILED`, `SCHEDULED`), start/end times, the aggregated runtime variables, and metadata including category (FlowGroup name or "uncategorized"), flow group association, and execution counters.
+7.  **PipelineExecution**: Represents the execution of a single GitLab pipeline within a `FlowExecution`, tracking its status, scheduled resume time, and associated logs.
+8.  **SchedulingService**: Memory-optimized background service that manages delayed step executions using database persistence instead of active polling.
 
 ### Execution Workflow
 
@@ -223,9 +224,22 @@ Open the log streaming page in your browser to see live logs. Replace `{flowExec
 - `GET /api/flows/{flowId}/executions`: Get flow executions by flow ID. **Supports pagination & sorting**
 - `POST /api/flow-executions/{flowExecutionUUID}/replay/{failedFlowStepId}`: Replay a failed flow from a specific step.
 
+##### **🆕 Advanced Flow Execution Search**
+- `GET /api/flow-executions/search`: Advanced search for flow executions by various filters including UUID, flow ID, flow group name, flow group ID, iteration, and date range. **Supports pagination & sorting**
+
 ##### **🆕 Multiple Flow Execution (Brand New!)**
 - **🆕 NEW!** `POST /api/flows/execute?trigger={flowId1},{flowId2},{flowId3}`: **Execute multiple flows simultaneously** with intelligent thread pool management, capacity monitoring, and graceful rejection.
 - **🆕 NEW!** `GET /api/flows/executions?triggered={flowId1},{flowId2},{flowId3}&search={term}`: **Query multiple flow executions** with pagination and default sorting by `startTime DESC`. Now supports `search` to match by execution `id` (UUID), `squashTestCaseId`, or `squashTestCase` (partial, case-insensitive).
+
+#### Flow Groups (Flow Group Management API)
+- `POST /api/flow-groups`: Create a new flow group.
+- `GET /api/flow-groups`: Get all flow groups. **Supports pagination & sorting**
+- `GET /api/flow-groups/{id}`: Get flow group by ID.
+- `PUT /api/flow-groups/{id}`: Update flow group.
+- `DELETE /api/flow-groups/{id}`: Delete flow group.
+- `POST /api/flow-groups/{id}/execute`: Execute all flows in group in parallel.
+- `GET /api/flow-groups/{id}/executions`: Get executions for a flow group with date filtering.
+- `GET /api/flow-groups/details`: Get flow group details with associated flows aggregated by flow group name, with pagination, filters and query parameters.
 
 #### Pipeline Executions (Pipeline Execution Monitoring API)
 - `GET /api/flow-executions/{flowExecutionUUID}/pipelines`: Get all pipeline executions for a flow execution. **Supports pagination & sorting**
@@ -988,6 +1002,236 @@ Future enhancements planned:
 - **Webhook Integration**: Real-time notifications for flow completion
 - **Flow Templates**: Reusable flow configurations
 
+## 🚀 Latest Enhancements (v3.0)
+
+### **🔥 Major Feature Additions**
+
+#### **1. FlowGroup Orchestration with Parallel Execution**
+
+**Problem Solved:** No way to execute multiple flows as a group with parallel processing and execution metrics tracking.
+
+**New Features:**
+- **FlowGroup Entity**: Collections of flows that can be executed together
+- **Parallel Flow Execution**: All flows in a group execute simultaneously
+- **Iteration Tracking**: Automatic counting of group executions with reset every 100 iterations
+- **Revolution Counting**: Tracks complete cycles of 100 iterations
+
+**New Endpoints:**
+- `POST /api/flow-groups` - Create flow groups
+- `POST /api/flow-groups/{id}/execute` - Execute all flows in group in parallel
+- `GET /api/flow-groups/{id}/executions` - Get executions for a flow group with date filtering
+
+#### **2. Enhanced FlowExecution Metadata**
+
+**Problem Solved:** Flow executions lacked categorization and group association tracking.
+
+**Changes Made:**
+- Added `category` field (defaults to "uncategorized" for standalone executions, FlowGroup name for group executions)
+- Added `flowGroupId`, `iteration`, `revolutions` fields for group execution tracking
+- Enhanced search capabilities across all metadata fields
+
+#### **3. Advanced FlowExecution Search**
+
+**Problem Solved:** Limited ability to search and filter flow executions by multiple criteria.
+
+**New Endpoint:**
+- `GET /api/flow-executions/search` - Advanced search with filters for:
+  - Execution UUID
+  - Flow ID
+  - Flow Group ID
+  - Iteration number
+  - Date range (fromDate/toDate)
+
+**Impact:** Comprehensive querying capabilities for execution analysis and monitoring.
+
+### **🔧 Technical Implementation Details**
+
+#### **FlowGroup Execution Logic:**
+```java
+// Increment iteration counters
+int currentIteration = flowGroup.getCurrentIteration() + 1;
+int revolutions = flowGroup.getRevolutions();
+if (currentIteration > 100) {
+    currentIteration = 1;
+    revolutions += 1;
+}
+```
+
+#### **Parallel Execution:**
+- Flows in a group execute concurrently using the existing thread pool
+- Each flow maintains sequential step execution within itself
+- All flows complete asynchronously with individual status tracking
+
+#### **Database Schema Updates:**
+- `flow_groups` table with `current_iteration` and `revolutions` columns
+- `flow_executions` table with `category`, `flow_group_id`, `iteration`, `revolutions` columns
+
+### **🛡️ Backward Compatibility**
+
+**✅ Zero Breaking Changes:**
+- All existing endpoints work unchanged
+- Standalone flow execution preserved
+- Existing response formats maintained
+- New fields are optional/additional metadata
+
+### **🎯 Usage Examples**
+
+#### **Create and Execute a FlowGroup**
+```bash
+# Create flow group
+POST /api/flow-groups
+{
+  "flowGroupName": "E2E Test Suite",
+  "flows": [1, 2, 3]
+}
+
+# Execute all flows in parallel
+POST /api/flow-groups/1/execute
+
+# Get executions for the group
+GET /api/flow-groups/1/executions?fromDate=2024-01-01T00:00:00&toDate=2024-01-31T23:59:59
+```
+
+#### **Advanced FlowExecution Search**
+```bash
+# Search by multiple criteria
+GET /api/flow-executions/search?flowGroupId=1&iteration=5&fromDate=2024-01-01T00:00:00
+```
+
+### **📊 Performance & Monitoring Improvements**
+
+**Execution Tracking:**
+- Iteration counters provide execution frequency metrics
+- Revolution counting enables long-term usage analysis
+- Category field enables execution type segmentation
+
+**Resource Management:**
+- Parallel execution maximizes throughput for grouped flows
+- Individual flow status monitoring maintained
+- Thread pool utilization optimized for concurrent flows
+
+## 🚀 Latest Enhancements (v4.0)
+
+### **🔥 Major Feature Additions**
+
+#### **1. Enhanced Swagger Documentation for Flow Groups**
+
+**Problem Solved:** Swagger examples for Flow Group POST and PUT endpoints included unnecessary fields that should be auto-populated or not editable.
+
+**Changes Made:**
+- **POST /api/flow-groups**: Request body example now only shows `flowGroupName` and `flows` (other fields like `id`, `createdAt`, `updatedAt`, `currentIteration`, `revolutions` are auto-populated)
+- **PUT /api/flow-groups/{id}**: Request body example now only shows `flowGroupName` and `flows` (fields like `currentIteration`, `revolutions` are not editable, `id` is passed as path parameter)
+- Added `@Schema` annotations with proper examples to `FlowGroupCreateDto` and `FlowGroupUpdateDto`
+
+**Impact:** API documentation now accurately reflects the expected request payloads, improving developer experience and reducing confusion.
+
+#### **2. New Flow Group Details Endpoint with Advanced Filtering**
+
+**Problem Solved:** No way to retrieve aggregated flow group details with pagination, filters, and query parameters for rendering accordion tables.
+
+**New Endpoint:**
+- `GET /api/flow-groups/details` - Get flow group details with associated flows aggregated by flow group name
+- **Supports:** Pagination, filtering by `flowGroupName` (partial match, case-insensitive), sorting parameters
+- **Response Format:**
+```json
+{
+  "flowGroups": {
+    "Smoke": [
+      {
+        "flowId": 1,
+        "squashTestCase": "Login Test Case",
+        "squashTestCaseId": 12345,
+        "createdAt": "2026-01-04T21:09:45.421804",
+        "updatedAt": "2026-01-06T21:09:45.421804"
+      }
+    ],
+    "Sanity": [...]
+  }
+}
+```
+
+**Impact:** Enables efficient rendering of accordion-style tables categorized by flow groups, with full pagination and filtering support.
+
+#### **3. Enhanced Flow Execution Search with Flow Group Name Filter**
+
+**Problem Solved:** Flow execution search lacked the ability to filter by flow group name.
+
+**Changes Made:**
+- Added `flowGroupName` parameter to `GET /api/flow-executions/search`
+- Supports partial matching with case-insensitive LIKE query
+- Updated repository query to join with `FlowGroup` table for name-based filtering
+
+**Impact:** Comprehensive search capabilities across all flow execution metadata, enabling better analysis and monitoring of grouped executions.
+
+### **🔧 Technical Implementation Details**
+
+#### **Swagger Schema Updates:**
+```java
+@Schema(example = """
+    {
+      "flowGroupName": "string",
+      "flows": [0]
+    }
+    """)
+public class FlowGroupCreateDto {
+    // Only flowGroupName and flows fields
+}
+```
+
+#### **Enhanced Repository Query:**
+```sql
+SELECT fe FROM FlowExecution fe LEFT JOIN FlowGroup fg ON fe.flowGroupId = fg.id
+WHERE (:flowGroupName IS NULL OR LOWER(fg.flowGroupName) LIKE LOWER(CONCAT('%', :flowGroupName, '%')))
+```
+
+#### **Flow Group Details Aggregation:**
+- Modified `FlowGroupDetailsDto` to use `List<FlowSummaryDto>` instead of array
+- Added filtering logic in service layer for `flowGroupName` parameter
+- Maintained backward compatibility with existing endpoint behavior
+
+### **🛡️ Backward Compatibility**
+
+**✅ Zero Breaking Changes:**
+- All existing endpoints work unchanged
+- New parameters are optional
+- Response formats maintained
+- Existing swagger examples still functional
+
+### **🎯 Usage Examples**
+
+#### **Filtered Flow Group Details**
+```bash
+# Get all flow group details
+GET /api/flow-groups/details
+
+# Filter by flow group name
+GET /api/flow-groups/details?flowGroupName=smoke
+
+# With pagination and sorting
+GET /api/flow-groups/details?page=0&size=10&sortBy=flowGroupName&sortDirection=ASC
+```
+
+#### **Advanced Flow Execution Search**
+```bash
+# Search by flow group name
+GET /api/flow-executions/search?flowGroupName=E2E&page=0&size=20
+
+# Combined filters
+GET /api/flow-executions/search?flowGroupName=regression&fromDate=2024-01-01T00:00:00&toDate=2024-01-31T23:59:59
+```
+
+### **📊 Performance & Documentation Improvements**
+
+**API Documentation:**
+- Cleaner, more accurate swagger examples
+- Reduced confusion about required vs auto-populated fields
+- Better developer onboarding experience
+
+**Query Performance:**
+- Efficient LEFT JOIN for flow group name filtering
+- Partial matching with database-level LIKE queries
+- Maintained existing query performance for other filters
+
 ---
 
 ## 🤝 Contributing
@@ -1012,4 +1256,4 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 
 ---
 
-**FlowForge v2.0** - Orchestrating seamless E2E test automation workflows with enhanced efficiency, intelligent resource management, and powerful multi-flow execution capabilities.
+**FlowForge v4.0** - Orchestrating seamless E2E test automation workflows with enhanced efficiency, intelligent resource management, powerful multi-flow execution capabilities, FlowGroup orchestration with iteration tracking, and advanced filtering and search capabilities.

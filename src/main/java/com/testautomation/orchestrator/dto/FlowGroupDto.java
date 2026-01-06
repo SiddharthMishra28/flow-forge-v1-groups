@@ -10,16 +10,20 @@ public class FlowGroupDto {
     private List<Long> flows;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Integer currentIteration;
+    private Integer revolutions;
 
     // Constructors
     public FlowGroupDto() {}
 
-    public FlowGroupDto(Long id, String flowGroupName, List<Long> flows, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public FlowGroupDto(Long id, String flowGroupName, List<Long> flows, LocalDateTime createdAt, LocalDateTime updatedAt, Integer currentIteration, Integer revolutions) {
         this.id = id;
         this.flowGroupName = flowGroupName;
         this.flows = flows;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.currentIteration = currentIteration;
+        this.revolutions = revolutions;
     }
 
     // Getters and Setters
@@ -61,5 +65,21 @@ public class FlowGroupDto {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Integer getCurrentIteration() {
+        return currentIteration;
+    }
+
+    public void setCurrentIteration(Integer currentIteration) {
+        this.currentIteration = currentIteration;
+    }
+
+    public Integer getRevolutions() {
+        return revolutions;
+    }
+
+    public void setRevolutions(Integer revolutions) {
+        this.revolutions = revolutions;
     }
 }

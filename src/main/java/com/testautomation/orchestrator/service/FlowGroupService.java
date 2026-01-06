@@ -1,9 +1,14 @@
 package com.testautomation.orchestrator.service;
 
 import com.testautomation.orchestrator.dto.FlowExecutionDto;
+import com.testautomation.orchestrator.dto.FlowGroupCreateDto;
+import com.testautomation.orchestrator.dto.FlowGroupDetailsDto;
 import com.testautomation.orchestrator.dto.FlowGroupDto;
+import com.testautomation.orchestrator.dto.FlowGroupUpdateDto;
+import com.testautomation.orchestrator.model.Flow;
 import com.testautomation.orchestrator.model.FlowGroup;
 import com.testautomation.orchestrator.repository.FlowGroupRepository;
+import com.testautomation.orchestrator.repository.FlowRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -25,7 +31,19 @@ public class FlowGroupService {
     private FlowGroupRepository flowGroupRepository;
 
     @Autowired
+    private FlowRepository flowRepository;
+
+    @Autowired
     private FlowExecutionService flowExecutionService;
+
+    public FlowGroupDto createFlowGroup(FlowGroupCreateDto flowGroupCreateDto) {
+        logger.info("Creating new flow group: {}", flowGroupCreateDto.getFlowGroupName());
+
+        FlowGroup flowGroup = new FlowGroup(flowGroupCreateDto.getFlowGroupName(), flowGroupCreateDto.getFlows());
+        FlowGroup saved = flowGroupRepository.save(flowGroup);
+
+        return convertToDto(saved);
+    }
 
     public FlowGroupDto createFlowGroup(FlowGroupDto flowGroupDto) {
         logger.info("Creating new flow group: {}", flowGroupDto.getFlowGroupName());
@@ -48,6 +66,19 @@ public class FlowGroupService {
 
         return flowGroupRepository.findAll(pageable)
                 .map(this::convertToDto);
+    }
+
+    public FlowGroupDto updateFlowGroup(Long id, FlowGroupUpdateDto flowGroupUpdateDto) {
+        logger.info("Updating flow group with ID: {}", id);
+
+        FlowGroup existing = flowGroupRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("FlowGroup not found with ID: " + id));
+
+        existing.setFlowGroupName(flowGroupUpdateDto.getFlowGroupName());
+        existing.setFlows(flowGroupUpdateDto.getFlows());
+
+        FlowGroup updated = flowGroupRepository.save(existing);
+        return convertToDto(updated);
     }
 
     public FlowGroupDto updateFlowGroup(Long id, FlowGroupDto flowGroupDto) {
@@ -79,6 +110,17 @@ public class FlowGroupService {
         FlowGroup flowGroup = flowGroupRepository.findById(flowGroupId)
                 .orElseThrow(() -> new IllegalArgumentException("FlowGroup not found with ID: " + flowGroupId));
 
+        // Update iteration counters
+        int currentIteration = flowGroup.getCurrentIteration() + 1;
+        int revolutions = flowGroup.getRevolutions();
+        if (currentIteration > 100) {
+            currentIteration = 1;
+            revolutions += 1;
+        }
+        flowGroup.setCurrentIteration(currentIteration);
+        flowGroup.setRevolutions(revolutions);
+        flowGroupRepository.save(flowGroup);
+
         List<Long> flowIds = flowGroup.getFlows();
         if (flowIds == null || flowIds.isEmpty()) {
             throw new IllegalArgumentException("FlowGroup has no flows to execute");
@@ -88,7 +130,7 @@ public class FlowGroupService {
                 .map(String::valueOf)
                 .collect(Collectors.joining(","));
 
-        Map<String, Object> result = flowExecutionService.executeMultipleFlows(flowIdsStr);
+        Map<String, Object> result = flowExecutionService.executeMultipleFlows(flowIdsStr, flowGroupId, currentIteration, revolutions, flowGroup.getFlowGroupName());
 
         // Start async execution for all accepted flows - this happens after we have the response ready
         @SuppressWarnings("unchecked")
@@ -105,13 +147,49 @@ public class FlowGroupService {
         return result;
     }
 
+    public FlowGroupDetailsDto getFlowGroupDetails(String flowGroupName, Integer page, Integer size, String sortBy, String sortDirection) {
+        logger.info("Getting flow group details with filters");
+
+        List<FlowGroup> flowGroups = flowGroupRepository.findAll();
+
+        // Filter by flowGroupName if provided
+        if (flowGroupName != null && !flowGroupName.trim().isEmpty()) {
+            flowGroups = flowGroups.stream()
+                    .filter(fg -> fg.getFlowGroupName().toLowerCase().contains(flowGroupName.toLowerCase()))
+                    .collect(Collectors.toList());
+        }
+
+        // TODO: Implement pagination and sorting if needed
+        // For now, return all filtered results
+
+        Map<String, List<FlowGroupDetailsDto.FlowSummaryDto>> flowGroupsMap = new HashMap<>();
+
+        for (FlowGroup flowGroup : flowGroups) {
+            List<Flow> flows = flowRepository.findAllById(flowGroup.getFlows());
+            List<FlowGroupDetailsDto.FlowSummaryDto> flowSummaries = flows.stream()
+                    .map(flow -> new FlowGroupDetailsDto.FlowSummaryDto(
+                            flow.getId(),
+                            flow.getSquashTestCase(),
+                            flow.getSquashTestCaseId().intValue(),
+                            flow.getCreatedAt(),
+                            flow.getUpdatedAt()))
+                    .collect(Collectors.toList());
+
+            flowGroupsMap.put(flowGroup.getFlowGroupName(), flowSummaries);
+        }
+
+        return new FlowGroupDetailsDto(flowGroupsMap);
+    }
+
     private FlowGroupDto convertToDto(FlowGroup flowGroup) {
         return new FlowGroupDto(
                 flowGroup.getId(),
                 flowGroup.getFlowGroupName(),
                 flowGroup.getFlows(),
                 flowGroup.getCreatedAt(),
-                flowGroup.getUpdatedAt()
+                flowGroup.getUpdatedAt(),
+                flowGroup.getCurrentIteration(),
+                flowGroup.getRevolutions()
         );
     }
 }

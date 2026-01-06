@@ -18,6 +18,10 @@ public class FlowExecutionDto {
     private LocalDateTime createdAt;
     private Boolean isReplay;
     private UUID originalFlowExecutionId;
+    private String category;
+    private Long flowGroupId;
+    private Integer iteration;
+    private Integer revolutions;
 
     // Nested details for comprehensive response
     private FlowDto flow;
@@ -138,5 +142,37 @@ public class FlowExecutionDto {
 
     public void setPipelineExecutions(List<PipelineExecutionDto> pipelineExecutions) {
         this.pipelineExecutions = pipelineExecutions;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public Long getFlowGroupId() {
+        return flowGroupId;
+    }
+
+    public void setFlowGroupId(Long flowGroupId) {
+        this.flowGroupId = flowGroupId;
+    }
+
+    public Integer getIteration() {
+        return iteration;
+    }
+
+    public void setIteration(Integer iteration) {
+        this.iteration = iteration;
+    }
+
+    public Integer getRevolutions() {
+        return revolutions;
+    }
+
+    public void setRevolutions(Integer revolutions) {
+        this.revolutions = revolutions;
     }
 }

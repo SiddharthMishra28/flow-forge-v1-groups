@@ -36,6 +36,12 @@ public class FlowGroup {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    @Column(name = "current_iteration", nullable = false)
+    private Integer currentIteration = 0;
+
+    @Column(name = "revolutions", nullable = false)
+    private Integer revolutions = 0;
+
     // Constructors
     public FlowGroup() {}
 
@@ -83,5 +89,21 @@ public class FlowGroup {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Integer getCurrentIteration() {
+        return currentIteration;
+    }
+
+    public void setCurrentIteration(Integer currentIteration) {
+        this.currentIteration = currentIteration;
+    }
+
+    public Integer getRevolutions() {
+        return revolutions;
+    }
+
+    public void setRevolutions(Integer revolutions) {
+        this.revolutions = revolutions;
     }
 }

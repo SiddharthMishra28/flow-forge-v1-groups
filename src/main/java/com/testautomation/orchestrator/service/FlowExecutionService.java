@@ -75,6 +75,10 @@ public class FlowExecutionService {
     private ThreadPoolTaskExecutor flowExecutionTaskExecutor;
 
     public Map<String, Object> executeMultipleFlows(String flowIdsParam) {
+        return executeMultipleFlows(flowIdsParam, null, null, null, null);
+    }
+
+    public Map<String, Object> executeMultipleFlows(String flowIdsParam, Long flowGroupId, Integer iteration, Integer revolutions, String category) {
         logger.info("Processing multiple flow execution request: {}", flowIdsParam);
 
         // Parse and validate flow IDs
@@ -110,7 +114,7 @@ public class FlowExecutionService {
                 try {
                     // Create the flow execution record synchronously to get the UUID and details
                     // This only creates the database record, no GitLab interaction yet
-                    FlowExecutionDto executionDto = createFlowExecution(flowId);
+                    FlowExecutionDto executionDto = createFlowExecution(flowId, flowGroupId, iteration, revolutions, category);
                     acceptedExecutions.add(executionDto);
 
                     logger.info("Flow {} accepted for execution with ID: {}", flowId, executionDto.getId());
@@ -189,6 +193,13 @@ public class FlowExecutionService {
         return new PageImpl<>(dtos, pageable, page.getTotalElements());
     }
 
+    public Page<FlowExecutionDto> searchFlowExecutionsAdvanced(UUID executionId, Long flowId, String flowGroupName, Long flowGroupId, Integer iteration, LocalDateTime fromDate, LocalDateTime toDate, Pageable pageable) {
+        logger.debug("Advanced search flow executions with filters: executionId={}, flowId={}, flowGroupName={}, flowGroupId={}, iteration={}, fromDate={}, toDate={}", executionId, flowId, flowGroupName, flowGroupId, iteration, fromDate, toDate);
+        Page<FlowExecution> page = flowExecutionRepository.searchAdvanced(executionId, flowId, flowGroupName, flowGroupId, iteration, fromDate, toDate, pageable);
+        List<FlowExecutionDto> dtos = page.getContent().stream().map(this::convertToDtoWithDetails).collect(Collectors.toList());
+        return new PageImpl<>(dtos, pageable, page.getTotalElements());
+    }
+
     public Page<FlowExecutionDto> getAllFlowExecutions(Pageable pageable) {
         logger.debug("Fetching all flow executions with pagination: {}", pageable);
 
@@ -240,6 +251,10 @@ public class FlowExecutionService {
     }
 
     public FlowExecutionDto createFlowExecution(Long flowId) {
+        return createFlowExecution(flowId, null, null, null, null);
+    }
+
+    public FlowExecutionDto createFlowExecution(Long flowId, Long flowGroupId, Integer iteration, Integer revolutions, String category) {
         logger.info("Creating flow execution for flow ID: {}", flowId);
 
         Flow flow = flowRepository.findById(flowId)
@@ -247,6 +262,18 @@ public class FlowExecutionService {
 
         // Create flow execution record
         FlowExecution flowExecution = new FlowExecution(flowId, new HashMap<>());
+        if (flowGroupId != null) {
+            flowExecution.setFlowGroupId(flowGroupId);
+        }
+        if (iteration != null) {
+            flowExecution.setIteration(iteration);
+        }
+        if (revolutions != null) {
+            flowExecution.setRevolutions(revolutions);
+        }
+        if (category != null) {
+            flowExecution.setCategory(category);
+        }
         flowExecution = flowExecutionRepository.save(flowExecution);
 
         // Pre-create placeholder PipelineExecution records for immediate visibility
@@ -1147,6 +1174,10 @@ public class FlowExecutionService {
         dto.setCreatedAt(entity.getCreatedAt());
         dto.setIsReplay(entity.getIsReplay());
         dto.setOriginalFlowExecutionId(entity.getOriginalFlowExecutionId());
+        dto.setCategory(entity.getCategory());
+        dto.setFlowGroupId(entity.getFlowGroupId());
+        dto.setIteration(entity.getIteration());
+        dto.setRevolutions(entity.getRevolutions());
         return dto;
     }
 

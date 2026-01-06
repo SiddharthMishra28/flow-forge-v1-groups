@@ -16,10 +16,12 @@ import org.springframework.data.domain.Pageable;
 // import removed: PageImpl no longer used after DB-side search
 // import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -206,6 +208,49 @@ public class FlowExecutionController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
             logger.error("Unexpected error getting multiple flow executions: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Internal server error"));
+        }
+    }
+
+    @GetMapping("/flow-executions/search")
+    @Operation(summary = "Advanced search for flow executions", description = "Search flow executions by various filters including UUID, flow ID, flow group name, flow group ID, iteration, and date range")
+    @ApiResponse(responseCode = "200", description = "Flow executions found")
+    public ResponseEntity<?> searchFlowExecutions(
+            @Parameter(description = "Flow execution UUID") @RequestParam(required = false) UUID executionId,
+            @Parameter(description = "Flow ID") @RequestParam(required = false) Long flowId,
+            @Parameter(description = "Flow group name") @RequestParam(required = false) String flowGroupName,
+            @Parameter(description = "Flow group ID") @RequestParam(required = false) Long flowGroupId,
+            @Parameter(description = "Iteration number") @RequestParam(required = false) Integer iteration,
+            @Parameter(description = "From date (ISO format)") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDate,
+            @Parameter(description = "To date (ISO format)") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDate,
+            @Parameter(description = "Page number (0-based)") @RequestParam(required = false) Integer page,
+            @Parameter(description = "Page size") @RequestParam(required = false) Integer size,
+            @Parameter(description = "Sort by field") @RequestParam(required = false) String sortBy,
+            @Parameter(description = "Sort direction (ASC or DESC)") @RequestParam(required = false, defaultValue = "DESC") String sortDirection) {
+
+        logger.debug("Advanced search flow executions with filters");
+
+        try {
+            int pageNumber = page != null ? page : 0;
+            int pageSize = size != null ? size : 20;
+
+            Sort sort;
+            if (sortBy != null && !sortBy.trim().isEmpty()) {
+                Sort.Direction direction = sortDirection != null ?
+                    Sort.Direction.fromString(sortDirection) : Sort.Direction.DESC;
+                sort = Sort.by(direction, sortBy);
+            } else {
+                sort = Sort.by(Sort.Direction.DESC, "createdAt");
+            }
+
+            Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
+            Page<FlowExecutionDto> executionsPage = flowExecutionService.searchFlowExecutionsAdvanced(
+                executionId, flowId, flowGroupName, flowGroupId, iteration, fromDate, toDate, pageable);
+
+            return ResponseEntity.ok(executionsPage);
+        } catch (Exception e) {
+            logger.error("Error searching flow executions: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Internal server error"));
         }

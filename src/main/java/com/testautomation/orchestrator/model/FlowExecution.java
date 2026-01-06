@@ -44,6 +44,18 @@ public class FlowExecution {
     @Column(name = "original_flow_execution_id")
     private UUID originalFlowExecutionId;
 
+    @Column(name = "category")
+    private String category;
+
+    @Column(name = "flow_group_id")
+    private Long flowGroupId;
+
+    @Column(name = "iteration")
+    private Integer iteration;
+
+    @Column(name = "revolutions")
+    private Integer revolutions;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -61,6 +73,7 @@ public class FlowExecution {
         this.startTime = LocalDateTime.now();
         this.isReplay = Boolean.FALSE;
         this.originalFlowExecutionId = null;
+        this.category = "uncategorized";
     }
 
     // Getters and Setters
@@ -135,5 +148,37 @@ public class FlowExecution {
 
     public void setOriginalFlowExecutionId(UUID originalFlowExecutionId) {
         this.originalFlowExecutionId = originalFlowExecutionId;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public Long getFlowGroupId() {
+        return flowGroupId;
+    }
+
+    public void setFlowGroupId(Long flowGroupId) {
+        this.flowGroupId = flowGroupId;
+    }
+
+    public Integer getIteration() {
+        return iteration;
+    }
+
+    public void setIteration(Integer iteration) {
+        this.iteration = iteration;
+    }
+
+    public Integer getRevolutions() {
+        return revolutions;
+    }
+
+    public void setRevolutions(Integer revolutions) {
+        this.revolutions = revolutions;
     }
 }

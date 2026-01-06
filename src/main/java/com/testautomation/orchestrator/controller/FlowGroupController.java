@@ -1,6 +1,11 @@
 package com.testautomation.orchestrator.controller;
 
+import com.testautomation.orchestrator.dto.FlowExecutionDto;
+import com.testautomation.orchestrator.dto.FlowGroupCreateDto;
+import com.testautomation.orchestrator.dto.FlowGroupDetailsDto;
 import com.testautomation.orchestrator.dto.FlowGroupDto;
+import com.testautomation.orchestrator.dto.FlowGroupUpdateDto;
+import com.testautomation.orchestrator.service.FlowExecutionService;
 import com.testautomation.orchestrator.service.FlowGroupService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -15,10 +20,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 @RestController
@@ -31,6 +38,9 @@ public class FlowGroupController {
     @Autowired
     private FlowGroupService flowGroupService;
 
+    @Autowired
+    private FlowExecutionService flowExecutionService;
+
     @PostMapping
     @Operation(summary = "Create a new flow group", description = "Create a new flow group with associated flows")
     @ApiResponses(value = {
@@ -38,11 +48,11 @@ public class FlowGroupController {
             @ApiResponse(responseCode = "400", description = "Invalid input data")
     })
     public ResponseEntity<FlowGroupDto> createFlowGroup(
-            @Valid @RequestBody FlowGroupDto flowGroupDto) {
-        logger.info("Creating new flow group: {}", flowGroupDto.getFlowGroupName());
+            @Valid @RequestBody FlowGroupCreateDto flowGroupCreateDto) {
+        logger.info("Creating new flow group: {}", flowGroupCreateDto.getFlowGroupName());
 
         try {
-            FlowGroupDto created = flowGroupService.createFlowGroup(flowGroupDto);
+            FlowGroupDto created = flowGroupService.createFlowGroup(flowGroupCreateDto);
             return new ResponseEntity<>(created, HttpStatus.CREATED);
         } catch (Exception e) {
             logger.error("Failed to create flow group: {}", e.getMessage());
@@ -122,11 +132,11 @@ public class FlowGroupController {
     })
     public ResponseEntity<FlowGroupDto> updateFlowGroup(
             @Parameter(description = "Flow group ID") @PathVariable Long id,
-            @Valid @RequestBody FlowGroupDto flowGroupDto) {
+            @Valid @RequestBody FlowGroupUpdateDto flowGroupUpdateDto) {
         logger.info("Updating flow group with ID: {}", id);
 
         try {
-            FlowGroupDto updated = flowGroupService.updateFlowGroup(id, flowGroupDto);
+            FlowGroupDto updated = flowGroupService.updateFlowGroup(id, flowGroupUpdateDto);
             return ResponseEntity.ok(updated);
         } catch (IllegalArgumentException e) {
             logger.error("Failed to update flow group: {}", e.getMessage());
@@ -181,6 +191,76 @@ public class FlowGroupController {
             }
         } catch (Exception e) {
             logger.error("Unexpected error executing flow group: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/{flowGroupId}/executions")
+    @Operation(summary = "Get flow executions for a flow group", description = "Retrieve flow executions associated with a specific flow group, with optional date range filtering")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Flow executions retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Flow group not found")
+    })
+    public ResponseEntity<?> getFlowGroupExecutions(
+            @Parameter(description = "Flow group ID") @PathVariable Long flowGroupId,
+            @Parameter(description = "From date (ISO format)") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDate,
+            @Parameter(description = "To date (ISO format)") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDate,
+            @Parameter(description = "Page number (0-based)") @RequestParam(required = false) Integer page,
+            @Parameter(description = "Page size") @RequestParam(required = false) Integer size,
+            @Parameter(description = "Sort by field") @RequestParam(required = false) String sortBy,
+            @Parameter(description = "Sort direction (ASC or DESC)") @RequestParam(required = false, defaultValue = "DESC") String sortDirection) {
+
+        logger.debug("Getting executions for flow group ID: {} with date range {} to {}", flowGroupId, fromDate, toDate);
+
+        try {
+            // Check if flow group exists
+            flowGroupService.getFlowGroupById(flowGroupId)
+                    .orElseThrow(() -> new IllegalArgumentException("FlowGroup not found with ID: " + flowGroupId));
+
+            int pageNumber = page != null ? page : 0;
+            int pageSize = size != null ? size : 20;
+
+            Sort sort;
+            if (sortBy != null && !sortBy.trim().isEmpty()) {
+                Sort.Direction direction = sortDirection != null ?
+                    Sort.Direction.fromString(sortDirection) : Sort.Direction.DESC;
+                sort = Sort.by(direction, sortBy);
+            } else {
+                sort = Sort.by(Sort.Direction.DESC, "createdAt");
+            }
+
+            Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
+            Page<FlowExecutionDto> executionsPage = flowExecutionService.searchFlowExecutionsAdvanced(
+                null, null, null, flowGroupId, null, fromDate, toDate, pageable);
+
+            return ResponseEntity.ok(executionsPage);
+        } catch (IllegalArgumentException e) {
+            logger.error("Flow group not found: {}", e.getMessage());
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            logger.error("Error getting flow group executions: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Internal server error"));
+        }
+    }
+
+    @GetMapping("/details")
+    @Operation(summary = "Get flow group details with associated flows", description = "Retrieve flow groups with their associated flows aggregated by flow group name, with pagination, filters and query parameters")
+    @ApiResponse(responseCode = "200", description = "Flow group details retrieved successfully")
+    public ResponseEntity<FlowGroupDetailsDto> getFlowGroupDetails(
+            @Parameter(description = "Filter by flow group name (partial match, case-insensitive)") @RequestParam(required = false) String flowGroupName,
+            @Parameter(description = "Page number (0-based)") @RequestParam(required = false) Integer page,
+            @Parameter(description = "Page size") @RequestParam(required = false) Integer size,
+            @Parameter(description = "Sort by field (e.g., 'flowGroupName', 'createdAt', 'updatedAt')") @RequestParam(required = false) String sortBy,
+            @Parameter(description = "Sort direction (ASC or DESC)") @RequestParam(required = false, defaultValue = "ASC") String sortDirection) {
+        logger.debug("Getting flow group details with filters: flowGroupName={}, page={}, size={}, sortBy={}, sortDirection={}",
+                    flowGroupName, page, size, sortBy, sortDirection);
+
+        try {
+            FlowGroupDetailsDto details = flowGroupService.getFlowGroupDetails(flowGroupName, page, size, sortBy, sortDirection);
+            return ResponseEntity.ok(details);
+        } catch (Exception e) {
+            logger.error("Error getting flow group details: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
