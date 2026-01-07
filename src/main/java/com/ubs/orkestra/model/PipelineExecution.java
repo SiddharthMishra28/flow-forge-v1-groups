@@ -68,9 +68,6 @@ public class PipelineExecution {
     @Column(name = "is_replay", nullable = false)
     private Boolean isReplay = false;
 
-    @Column(name = "original_flow_execution_id")
-    private UUID originalFlowExecutionId;
-
     @Column(name = "resume_time")
     private LocalDateTime resumeTime;
 
@@ -207,14 +204,6 @@ public class PipelineExecution {
 
     public void setIsReplay(Boolean isReplay) {
         this.isReplay = isReplay;
-    }
-
-    public UUID getOriginalFlowExecutionId() {
-        return originalFlowExecutionId;
-    }
-
-    public void setOriginalFlowExecutionId(UUID originalFlowExecutionId) {
-        this.originalFlowExecutionId = originalFlowExecutionId;
     }
 
     public LocalDateTime getResumeTime() {

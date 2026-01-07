@@ -18,6 +18,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Propagation;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -62,6 +63,9 @@ public class FlowExecutionService {
 
     @Autowired
     private GitLabConfig gitLabConfig;
+
+    @Autowired
+    private SchedulingService schedulingService;
 
     @org.springframework.beans.factory.annotation.Value("${scheduling.pipeline-status.polling-interval:60000}")
     private long scheduledPollingIntervalMs;
@@ -450,8 +454,9 @@ public class FlowExecutionService {
             Flow flow = flowRepository.findById(flowId)
                     .orElseThrow(() -> new IllegalArgumentException("Flow not found with ID: " + flowId));
 
-            // Execute steps sequentially
+            // Execute steps sequentially, checking for scheduling
             Map<String, String> accumulatedRuntimeVariables = new HashMap<>();
+            LocalDateTime previousStepEndTime = flowExecution.getStartTime() != null ? flowExecution.getStartTime() : LocalDateTime.now();
 
             for (int i = 0; i < flow.getFlowStepIds().size(); i++) {
                 Long stepId = flow.getFlowStepIds().get(i);
@@ -496,7 +501,35 @@ public class FlowExecutionService {
                         logger.debug("Accumulated runtime variables after step {}: {}", stepId, accumulatedRuntimeVariables);
                     }
 
+                    // Update previous step end time for scheduling calculations
+                    if (existingPipelineExecution.getEndTime() != null) {
+                        previousStepEndTime = existingPipelineExecution.getEndTime();
+                    }
+
                     continue; // Skip to next step
+                }
+
+                // Check if step has invokeScheduler - if so, schedule it and stop execution here
+                if (step.getInvokeScheduler() != null) {
+                    LocalDateTime resumeTime = schedulingService.calculateResumeTime(previousStepEndTime, step.getInvokeScheduler());
+                    if (resumeTime != null) {
+                        logger.info("Step {} has invokeScheduler, scheduling for execution at: {} and stopping flow execution", stepId, resumeTime);
+
+                        // Find existing pipeline execution record
+                        PipelineExecution pipelineExecution = pipelineExecutionRepository
+                                .findByFlowExecutionIdAndFlowStepId(flowExecution.getId(), stepId)
+                                .orElseThrow(() -> new IllegalStateException("Pipeline execution record not found for step: " + stepId));
+
+                        // Schedule the pipeline execution
+                        schedulingService.schedulePipelineExecution(pipelineExecution, resumeTime);
+
+                        // STOP execution here - don't continue to next steps
+                        // The scheduler will handle resuming execution when this step completes
+                        logger.info("Flow execution paused at scheduled step {}, will resume after completion", stepId);
+                        return CompletableFuture.completedFuture(convertToDto(flowExecution));
+                    } else {
+                        logger.warn("Failed to calculate resume time for step {} with invokeScheduler, executing immediately", stepId);
+                    }
                 }
 
                 // Prepare variables for this pipeline: FlowStep TestData + Accumulated Runtime
@@ -529,6 +562,11 @@ public class FlowExecutionService {
                 if (pipelineExecution.getRuntimeTestData() != null) {
                     accumulatedRuntimeVariables.putAll(pipelineExecution.getRuntimeTestData());
                     logger.debug("Accumulated runtime variables after step {}: {}", stepId, accumulatedRuntimeVariables);
+                }
+
+                // Update previous step end time for scheduling calculations
+                if (pipelineExecution.getEndTime() != null) {
+                    previousStepEndTime = pipelineExecution.getEndTime();
                 }
             }
 
@@ -580,7 +618,6 @@ public class FlowExecutionService {
         // Create new flow execution record for replay
         FlowExecution replayExecution = new FlowExecution(originalExecution.getFlowId(), accumulatedRuntimeVariables);
         replayExecution.setIsReplay(true);
-        replayExecution.setOriginalFlowExecutionId(originalFlowExecutionId);
         replayExecution = flowExecutionRepository.save(replayExecution);
 
         // Build a map of original successful pipelines before the failed step (by flowStepId)
@@ -618,8 +655,7 @@ public class FlowExecutionService {
                 carried.setRuntimeTestData(new HashMap<>(accumulatedRuntimeVariables));
             }
             carried.setStatus(ExecutionStatus.PASSED);
-            carried.setIsReplay(true);
-            carried.setOriginalFlowExecutionId(originalFlowExecutionId);
+            carried.setIsReplay(false); // Carried steps are not replays - they're successful from original execution
             pipelineExecutionTxService.saveNew(carried);
         }
 
@@ -638,12 +674,310 @@ public class FlowExecutionService {
             placeholder.setStatus(ExecutionStatus.SCHEDULED);
             placeholder.setStartTime(null);
             placeholder.setIsReplay(true);
-            placeholder.setOriginalFlowExecutionId(originalFlowExecutionId);
             pipelineExecutionTxService.saveNew(placeholder);
         }
 
         logger.info("Created replay flow execution with ID: {} for original execution: {} and pre-created placeholders from step {} onward", replayExecution.getId(), originalFlowExecutionId, failedFlowStepId);
         return convertToDto(replayExecution);
+    }
+
+    /**
+     * Resume flow execution from a specific step onwards (used by scheduler when scheduled steps complete)
+     */
+    @Async("flowExecutionTaskExecutor")
+    public void resumeFlowExecution(UUID flowExecutionId, Long completedStepId) {
+        logger.info("Resuming flow execution ID: {} from step: {}", flowExecutionId, completedStepId);
+
+        // Set up logging context manually
+        org.slf4j.MDC.put("flowExecutionId", flowExecutionId.toString());
+
+        FlowExecution flowExecution = null;
+        try {
+            flowExecution = flowExecutionRepository.findById(flowExecutionId)
+                    .orElseThrow(() -> new IllegalArgumentException("Flow execution not found with ID: " + flowExecutionId));
+
+            final Long flowId = flowExecution.getFlowId();
+            Flow flow = flowRepository.findById(flowId)
+                    .orElseThrow(() -> new IllegalArgumentException("Flow not found with ID: " + flowId));
+
+            // Find the index of the completed step
+            int completedStepIndex = -1;
+            for (int i = 0; i < flow.getFlowStepIds().size(); i++) {
+                if (flow.getFlowStepIds().get(i).equals(completedStepId)) {
+                    completedStepIndex = i;
+                    break;
+                }
+            }
+
+            if (completedStepIndex == -1) {
+                logger.error("Completed step {} not found in flow {}", completedStepId, flowId);
+                return;
+            }
+
+            // Check if this is a scheduled step that was just activated (marked as IN_PROGRESS by scheduler)
+            // If so, we need to execute it first before continuing to subsequent steps
+            PipelineExecution scheduledStepExecution = pipelineExecutionRepository
+                    .findByFlowExecutionIdAndFlowStepId(flowExecutionId, completedStepId)
+                    .orElse(null);
+
+            Map<String, String> accumulatedRuntimeVariables = new HashMap<>(flowExecution.getRuntimeVariables());
+            LocalDateTime previousStepEndTime = LocalDateTime.now();
+
+            // If this is a scheduled step that was just activated by the scheduler, execute it
+            // Check if it's not already completed (PASSED or FAILED)
+            if (scheduledStepExecution != null &&
+                scheduledStepExecution.getStatus() != ExecutionStatus.PASSED &&
+                scheduledStepExecution.getStatus() != ExecutionStatus.FAILED) {
+                logger.info("Executing scheduled step {} that was just activated by scheduler", completedStepId);
+
+                FlowStep scheduledStep = flowStepRepository.findById(completedStepId)
+                        .orElseThrow(() -> new IllegalArgumentException("Flow step not found with ID: " + completedStepId));
+
+                Application application = applicationRepository.findById(scheduledStep.getApplicationId())
+                        .orElseThrow(() -> new IllegalArgumentException("Application not found with ID: " + scheduledStep.getApplicationId()));
+
+                // Prepare variables for this scheduled step
+                Map<String, String> pipelineVariables = new HashMap<>();
+                Map<String, String> stepTestData = testDataService.mergeTestDataByIds(scheduledStep.getTestDataIds());
+                pipelineVariables.putAll(stepTestData);
+                pipelineVariables.putAll(accumulatedRuntimeVariables);
+
+                logger.debug("Pipeline variables for scheduled step {}: {}", completedStepId, pipelineVariables);
+
+                // Execute the scheduled step (this will trigger GitLab pipeline and wait for completion)
+                scheduledStepExecution = executePipelineStep(flowExecution, scheduledStep, application, pipelineVariables);
+
+                if (scheduledStepExecution.getStatus() == ExecutionStatus.FAILED) {
+                    // Mark flow as failed and stop execution
+                    flowExecution.setStatus(ExecutionStatus.FAILED);
+                    flowExecution.setEndTime(LocalDateTime.now());
+                    flowExecution.setRuntimeVariables(accumulatedRuntimeVariables);
+                    flowExecutionRepository.save(flowExecution);
+                    logger.error("Flow execution failed at scheduled step: {}", completedStepId);
+                    return;
+                }
+
+                // Accumulate runtime variables from this step
+                if (scheduledStepExecution.getRuntimeTestData() != null) {
+                    accumulatedRuntimeVariables.putAll(scheduledStepExecution.getRuntimeTestData());
+                    logger.debug("Accumulated runtime variables after scheduled step {}: {}", completedStepId, accumulatedRuntimeVariables);
+                }
+
+                // Update previous step end time
+                if (scheduledStepExecution.getEndTime() != null) {
+                    previousStepEndTime = scheduledStepExecution.getEndTime();
+                }
+            }
+
+            // Continue execution from the next step onwards
+            for (int i = completedStepIndex + 1; i < flow.getFlowStepIds().size(); i++) {
+                Long stepId = flow.getFlowStepIds().get(i);
+                FlowStep step = flowStepRepository.findById(stepId)
+                        .orElseThrow(() -> new IllegalArgumentException("Flow step not found with ID: " + stepId));
+
+                Application application = applicationRepository.findById(step.getApplicationId())
+                        .orElseThrow(() -> new IllegalArgumentException("Application not found with ID: " + stepId));
+
+                // Check if this pipeline step is already running or completed
+                PipelineExecution existingPipelineExecution = pipelineExecutionRepository
+                        .findByFlowExecutionIdAndFlowStepId(flowExecution.getId(), stepId)
+                        .orElse(null);
+
+                if (existingPipelineExecution != null &&
+                    existingPipelineExecution.getStatus() == ExecutionStatus.PASSED) {
+                    // Pipeline already completed successfully, accumulate variables and continue
+                    logger.debug("Pipeline for step {} already completed successfully", stepId);
+
+                    // Accumulate runtime variables from this step for next steps
+                    if (existingPipelineExecution.getRuntimeTestData() != null) {
+                        accumulatedRuntimeVariables.putAll(existingPipelineExecution.getRuntimeTestData());
+                        logger.debug("Accumulated runtime variables after step {}: {}", stepId, accumulatedRuntimeVariables);
+                    }
+
+                    // Update previous step end time
+                    if (existingPipelineExecution.getEndTime() != null) {
+                        previousStepEndTime = existingPipelineExecution.getEndTime();
+                    }
+
+                    continue; // Skip to next step
+                }
+
+                if (existingPipelineExecution != null &&
+                    existingPipelineExecution.getStatus() == ExecutionStatus.FAILED) {
+                    // Pipeline already failed, mark flow as failed and stop execution
+                    logger.debug("Pipeline for step {} already failed", stepId);
+
+                    flowExecution.setStatus(ExecutionStatus.FAILED);
+                    flowExecution.setEndTime(LocalDateTime.now());
+                    flowExecution.setRuntimeVariables(accumulatedRuntimeVariables);
+                    flowExecutionRepository.save(flowExecution);
+
+                    logger.error("Flow execution failed at step: {}", stepId);
+                    return;
+                }
+
+                if (existingPipelineExecution != null &&
+                    existingPipelineExecution.getStatus() == ExecutionStatus.RUNNING) {
+                    // Pipeline is currently running, wait for completion
+                    logger.debug("Pipeline for step {} is currently running, waiting for completion", stepId);
+                    existingPipelineExecution = waitForPipelineCompletion(existingPipelineExecution, application, step);
+
+                    if (existingPipelineExecution.getStatus() == ExecutionStatus.FAILED) {
+                        // Mark flow as failed and stop execution
+                        flowExecution.setStatus(ExecutionStatus.FAILED);
+                        flowExecution.setEndTime(LocalDateTime.now());
+                        flowExecution.setRuntimeVariables(accumulatedRuntimeVariables);
+                        flowExecutionRepository.save(flowExecution);
+
+                        logger.error("Flow execution failed at step: {}", stepId);
+                        return;
+                    }
+
+                    // Accumulate runtime variables from this step for next steps
+                    if (existingPipelineExecution.getRuntimeTestData() != null) {
+                        accumulatedRuntimeVariables.putAll(existingPipelineExecution.getRuntimeTestData());
+                        logger.debug("Accumulated runtime variables after step {}: {}", stepId, accumulatedRuntimeVariables);
+                    }
+
+                    // Update previous step end time
+                    if (existingPipelineExecution.getEndTime() != null) {
+                        previousStepEndTime = existingPipelineExecution.getEndTime();
+                    }
+
+                    continue; // Skip to next step
+                }
+
+                // Check if this is a scheduled step that was just marked as IN_PROGRESS by the scheduler
+                if (existingPipelineExecution != null &&
+                    existingPipelineExecution.getStatus() == ExecutionStatus.IN_PROGRESS) {
+                    // This is a scheduled step that the scheduler just activated
+                    // We need to actually trigger the GitLab pipeline now
+                    logger.info("Executing scheduled step {} that was activated by scheduler", stepId);
+
+                    // Prepare variables for this pipeline: FlowStep TestData + Accumulated Runtime
+                    Map<String, String> pipelineVariables = new HashMap<>();
+
+                    // 1. Start with merged test data from TestData table
+                    Map<String, String> stepTestData = testDataService.mergeTestDataByIds(step.getTestDataIds());
+                    pipelineVariables.putAll(stepTestData);
+
+                    // 2. Add accumulated runtime variables from previous steps (can override test data)
+                    pipelineVariables.putAll(accumulatedRuntimeVariables);
+
+                    logger.debug("Pipeline variables for scheduled step {}: {}", stepId, pipelineVariables);
+
+                    // Update existing pipeline execution and trigger GitLab pipeline
+                    existingPipelineExecution.setStartTime(LocalDateTime.now());
+                    existingPipelineExecution.setStatus(ExecutionStatus.RUNNING);
+                    existingPipelineExecution = pipelineExecutionRepository.save(existingPipelineExecution);
+
+                    // Execute pipeline step (this will trigger GitLab and wait for completion)
+                    existingPipelineExecution = executePipelineStepInternal(flowExecution, step, application, pipelineVariables, existingPipelineExecution);
+
+                    if (existingPipelineExecution.getStatus() == ExecutionStatus.FAILED) {
+                        // Mark flow as failed and stop execution
+                        flowExecution.setStatus(ExecutionStatus.FAILED);
+                        flowExecution.setEndTime(LocalDateTime.now());
+                        flowExecution.setRuntimeVariables(accumulatedRuntimeVariables);
+                        flowExecutionRepository.save(flowExecution);
+
+                        logger.error("Flow execution failed at scheduled step: {}", stepId);
+                        return;
+                    }
+
+                    // Accumulate runtime variables from this step for next steps
+                    if (existingPipelineExecution.getRuntimeTestData() != null) {
+                        accumulatedRuntimeVariables.putAll(existingPipelineExecution.getRuntimeTestData());
+                        logger.debug("Accumulated runtime variables after scheduled step {}: {}", stepId, accumulatedRuntimeVariables);
+                    }
+
+                    // Update previous step end time
+                    if (existingPipelineExecution.getEndTime() != null) {
+                        previousStepEndTime = existingPipelineExecution.getEndTime();
+                    }
+
+                    continue; // Continue to next step
+                }
+
+                // Check if step has invokeScheduler - if so, schedule it and stop execution here
+                if (step.getInvokeScheduler() != null) {
+                    LocalDateTime resumeTime = schedulingService.calculateResumeTime(previousStepEndTime, step.getInvokeScheduler());
+                    if (resumeTime != null) {
+                        logger.info("Step {} has invokeScheduler, scheduling for execution at: {} and stopping flow execution", stepId, resumeTime);
+
+                        // Find existing pipeline execution record
+                        PipelineExecution pipelineExecution = pipelineExecutionRepository
+                                .findByFlowExecutionIdAndFlowStepId(flowExecution.getId(), stepId)
+                                .orElseThrow(() -> new IllegalStateException("Pipeline execution record not found for step: " + stepId));
+
+                        // Schedule the pipeline execution
+                        schedulingService.schedulePipelineExecution(pipelineExecution, resumeTime);
+
+                        // STOP execution here - don't continue to next steps
+                        logger.info("Flow execution paused at scheduled step {}, will resume after completion", stepId);
+                        return;
+                    } else {
+                        logger.warn("Failed to calculate resume time for step {} with invokeScheduler, executing immediately", stepId);
+                    }
+                }
+
+                // Prepare variables for this pipeline: FlowStep TestData + Accumulated Runtime
+                Map<String, String> pipelineVariables = new HashMap<>();
+
+                // 1. Start with merged test data from TestData table
+                Map<String, String> stepTestData = testDataService.mergeTestDataByIds(step.getTestDataIds());
+                pipelineVariables.putAll(stepTestData);
+
+                // 2. Add accumulated runtime variables from previous steps (can override test data)
+                pipelineVariables.putAll(accumulatedRuntimeVariables);
+
+                logger.debug("Pipeline variables for step {}: {}", stepId, pipelineVariables);
+
+                // Execute pipeline step
+                PipelineExecution pipelineExecution = executePipelineStep(flowExecution, step, application, pipelineVariables);
+
+                if (pipelineExecution.getStatus() == ExecutionStatus.FAILED) {
+                    // Mark flow as failed and stop execution
+                    flowExecution.setStatus(ExecutionStatus.FAILED);
+                    flowExecution.setEndTime(LocalDateTime.now());
+                    flowExecution.setRuntimeVariables(accumulatedRuntimeVariables);
+                    flowExecutionRepository.save(flowExecution);
+
+                    logger.error("Flow execution failed at step: {}", stepId);
+                    return;
+                }
+
+                // Accumulate runtime variables from this step for next steps
+                if (pipelineExecution.getRuntimeTestData() != null) {
+                    accumulatedRuntimeVariables.putAll(pipelineExecution.getRuntimeTestData());
+                    logger.debug("Accumulated runtime variables after step {}: {}", stepId, accumulatedRuntimeVariables);
+                }
+
+                // Update previous step end time
+                if (pipelineExecution.getEndTime() != null) {
+                    previousStepEndTime = pipelineExecution.getEndTime();
+                }
+            }
+
+            // Mark flow as successful
+            flowExecution.setStatus(ExecutionStatus.PASSED);
+            flowExecution.setEndTime(LocalDateTime.now());
+            flowExecution.setRuntimeVariables(accumulatedRuntimeVariables);
+            flowExecution = flowExecutionRepository.save(flowExecution);
+
+            logger.info("Flow execution completed successfully: {}", flowExecution.getId());
+
+        } catch (Exception e) {
+            logger.error("Flow execution resume failed with exception: {}", e.getMessage(), e);
+
+            if (flowExecution != null) {
+                flowExecution.setStatus(ExecutionStatus.FAILED);
+                flowExecution.setEndTime(LocalDateTime.now());
+                flowExecutionRepository.save(flowExecution);
+            }
+        } finally {
+            org.slf4j.MDC.remove("flowExecutionId");
+        }
     }
 
     @Async("flowExecutionTaskExecutor")
@@ -693,7 +1027,7 @@ public class FlowExecutionService {
                 logger.debug("Replay pipeline variables for step {}: {}", stepId, pipelineVariables);
 
                 // Execute pipeline step with replay flag
-                PipelineExecution pipelineExecution = executeReplayPipelineStep(replayExecution, step, application, pipelineVariables, originalFlowExecutionId);
+                PipelineExecution pipelineExecution = executeReplayPipelineStep(replayExecution, step, application, pipelineVariables);
 
                 if (pipelineExecution.getStatus() == ExecutionStatus.FAILED) {
                     // Mark replay flow as failed and stop execution
@@ -767,8 +1101,7 @@ public class FlowExecutionService {
     }
 
     private PipelineExecution executeReplayPipelineStep(FlowExecution flowExecution, FlowStep step,
-                                                       Application application, Map<String, String> pipelineVariables,
-                                                       UUID originalFlowExecutionId) {
+                                                       Application application, Map<String, String> pipelineVariables) {
         logger.info("Executing REPLAY pipeline step: {} for flow execution: {}", step.getId(), flowExecution.getId());
 
         // Use the already merged pipeline variables (Global + FlowStep + Runtime)
@@ -789,7 +1122,6 @@ public class FlowExecutionService {
         pipelineExecution.setStatus(ExecutionStatus.RUNNING);
         pipelineExecution.setStartTime(LocalDateTime.now());
         pipelineExecution.setIsReplay(true);
-        pipelineExecution.setOriginalFlowExecutionId(originalFlowExecutionId);
         pipelineExecution = pipelineExecutionRepository.save(pipelineExecution);
 
         try {
@@ -866,6 +1198,19 @@ public class FlowExecutionService {
                                                  Application application, Map<String, String> pipelineVariables) {
         logger.info("Executing pipeline step: {} for flow execution: {}", step.getId(), flowExecution.getId());
 
+        // Find existing pipeline execution record created in createFlowExecution
+        PipelineExecution pipelineExecution = pipelineExecutionRepository
+                .findByFlowExecutionIdAndFlowStepId(flowExecution.getId(), step.getId())
+                .orElseThrow(() -> new IllegalStateException("Pipeline execution record not found for step: " + step.getId()));
+
+        return executePipelineStepInternal(flowExecution, step, application, pipelineVariables, pipelineExecution);
+    }
+
+    private PipelineExecution executePipelineStepInternal(FlowExecution flowExecution, FlowStep step,
+                                                        Application application, Map<String, String> pipelineVariables,
+                                                        PipelineExecution existingPipelineExecution) {
+        logger.info("Executing pipeline step (internal): {} for flow execution: {}", step.getId(), flowExecution.getId());
+
         // Use the already merged pipeline variables (Global + FlowStep + Runtime)
         Map<String, String> mergedVariables = new HashMap<>(pipelineVariables);
 
@@ -875,12 +1220,10 @@ public class FlowExecutionService {
             logger.debug("Added testTag '{}' to pipeline variables for step {}", step.getTestTag(), step.getId());
         }
 
-        // Find existing pipeline execution record created in createFlowExecution
-        PipelineExecution pipelineExecution = pipelineExecutionRepository
-                .findByFlowExecutionIdAndFlowStepId(flowExecution.getId(), step.getId())
-                .orElseThrow(() -> new IllegalStateException("Pipeline execution record not found for step: " + step.getId()));
+        // Use the provided existing pipeline execution record
+        PipelineExecution pipelineExecution = existingPipelineExecution;
 
-        // Update the existing record instead of creating new one
+        // Update the existing record
         pipelineExecution.setStatus(ExecutionStatus.RUNNING);
         pipelineExecution.setStartTime(LocalDateTime.now());
         pipelineExecution = pipelineExecutionRepository.save(pipelineExecution);
@@ -1104,6 +1447,7 @@ public class FlowExecutionService {
     }
 
     @Async("pipelinePollingTaskExecutor")
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void pollPipelineCompletion(PipelineExecution pipelineExecution, Application application, String gitlabBaseUrl, FlowStep step) {
         logger.info("Starting to poll pipeline completion for pipeline: {}", pipelineExecution.getPipelineId());
 
@@ -1139,7 +1483,7 @@ public class FlowExecutionService {
         }
     }
 
-    @Transactional(readOnly = true)
+    @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = true)
     public Optional<FlowExecutionDto> getFlowExecutionById(UUID flowExecutionId) {
         logger.debug("Fetching flow execution with ID: {}", flowExecutionId);
         return flowExecutionRepository.findById(flowExecutionId)
@@ -1172,7 +1516,6 @@ public class FlowExecutionService {
         dto.setStatus(entity.getStatus());
         dto.setCreatedAt(entity.getCreatedAt());
         dto.setIsReplay(entity.getIsReplay());
-        dto.setOriginalFlowExecutionId(entity.getOriginalFlowExecutionId());
         dto.setCategory(entity.getCategory());
         dto.setFlowGroupId(entity.getFlowGroupId());
         dto.setIteration(entity.getIteration());
@@ -1244,7 +1587,6 @@ public class FlowExecutionService {
                 placeholder.setStatus(ExecutionStatus.SCHEDULED); // Waiting to be executed
                 placeholder.setCreatedAt(null);
                 placeholder.setIsReplay(false);
-                placeholder.setOriginalFlowExecutionId(null);
                 allPipelineExecutions.add(placeholder);
             }
         }
@@ -1322,6 +1664,22 @@ public class FlowExecutionService {
         dto.setFlowId(entity.getFlowId());
         dto.setFlowExecutionId(entity.getFlowExecutionId());
         dto.setFlowStepId(entity.getFlowStepId());
+
+        // Get application name from FlowStep
+        String applicationName = null;
+        try {
+            FlowStep flowStep = flowStepRepository.findById(entity.getFlowStepId()).orElse(null);
+            if (flowStep != null) {
+                Application application = applicationRepository.findById(flowStep.getApplicationId()).orElse(null);
+                if (application != null) {
+                    applicationName = application.getApplicationName();
+                }
+            }
+        } catch (Exception e) {
+            logger.debug("Could not retrieve application name for flow step {}: {}", entity.getFlowStepId(), e.getMessage());
+        }
+        dto.setApplicationName(applicationName);
+
         dto.setPipelineId(entity.getPipelineId());
         dto.setPipelineUrl(entity.getPipelineUrl());
         // Removed jobId and jobUrl as requested - they create ambiguity for multi-job pipelines
@@ -1332,7 +1690,7 @@ public class FlowExecutionService {
         dto.setStatus(entity.getStatus());
         dto.setCreatedAt(entity.getCreatedAt());
         dto.setIsReplay(entity.getIsReplay());
-        dto.setOriginalFlowExecutionId(entity.getOriginalFlowExecutionId());
+        dto.setResumeTime(entity.getResumeTime());
         return dto;
     }
 }

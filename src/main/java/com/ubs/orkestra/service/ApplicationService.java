@@ -47,20 +47,28 @@ public class ApplicationService {
                                              applicationDto.getGitlabProjectId() + " already exists");
         }
         
-        // Validate GitLab connection before creating application
-        ValidationResponseDto validationResponse = validateGitLabConnectionInternal(
-            applicationDto.getPersonalAccessToken(), 
-            applicationDto.getGitlabProjectId()
-        );
-        
-        if (!validationResponse.isValid()) {
-            throw new GitLabValidationException("GitLab connection validation failed: " + validationResponse.getMessage());
-        }
-        
         Application application = convertToEntity(applicationDto);
-        // Set project name and URL from validation response
-        application.setProjectName(validationResponse.getProjectName());
-        application.setProjectUrl(validationResponse.getProjectUrl());
+
+        // Validate GitLab connection before creating application (skip in mock mode)
+        if (!gitLabConfig.isMockMode()) {
+            ValidationResponseDto validationResponse = validateGitLabConnectionInternal(
+                applicationDto.getPersonalAccessToken(),
+                applicationDto.getGitlabProjectId()
+            );
+
+            if (!validationResponse.isValid()) {
+                throw new GitLabValidationException("GitLab connection validation failed: " + validationResponse.getMessage());
+            }
+
+            // Set project name and URL from validation response
+            application.setProjectName(validationResponse.getProjectName());
+            application.setProjectUrl(validationResponse.getProjectUrl());
+        } else {
+            // In mock mode, set default project name and URL
+            application.setProjectName("Mock Project");
+            application.setProjectUrl("https://mock-gitlab.com/mock-project");
+            logger.info("Skipping GitLab validation in mock mode for project: {}", applicationDto.getGitlabProjectId());
+        }
         
         Application savedApplication = applicationRepository.save(application);
         

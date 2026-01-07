@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +27,7 @@ public class SchedulingService {
     private PipelineExecutionRepository pipelineExecutionRepository;
 
     @Autowired
+    @Lazy
     private FlowExecutionService flowExecutionService;
 
     @Value("${scheduling.pipeline-status.polling-interval:60000}")
@@ -179,11 +181,10 @@ public class SchedulingService {
                 execution.setResumeTime(null); // Clear resume time
                 pipelineExecutionRepository.save(execution);
 
-                // Resume the flow execution from this step  
-                // Note: This method needs to be implemented in FlowExecutionService
-                // flowExecutionService.resumeFlowExecution(execution.getFlowExecutionId(), execution.getFlowStepId());
-                
-                logger.info("Pipeline execution ID: {} marked as IN_PROGRESS, ready for pipeline trigger", execution.getId());
+                // Resume the flow execution from this step onwards
+                flowExecutionService.resumeFlowExecution(execution.getFlowExecutionId(), execution.getFlowStepId());
+
+                logger.info("Pipeline execution ID: {} marked as IN_PROGRESS and flow execution resumed", execution.getId());
                 
             } catch (Exception e) {
                 logger.error("Error resuming scheduled pipeline execution ID: {}", execution.getId(), e);

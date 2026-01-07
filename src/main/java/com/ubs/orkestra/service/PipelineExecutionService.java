@@ -76,7 +76,6 @@ public class PipelineExecutionService {
         dto.setStatus(entity.getStatus());
         dto.setCreatedAt(entity.getCreatedAt());
         dto.setIsReplay(entity.getIsReplay());
-        dto.setOriginalFlowExecutionId(entity.getOriginalFlowExecutionId());
         dto.setResumeTime(entity.getResumeTime());
         return dto;
     }

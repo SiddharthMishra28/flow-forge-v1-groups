@@ -54,12 +54,10 @@ public interface PipelineExecutionRepository extends JpaRepository<PipelineExecu
            "FROM PipelineExecution pe")
     List<Object[]> findTopFailingBranches(@Param("limit") int limit);
     
-    // Methods to support replay functionality
-    List<PipelineExecution> findByOriginalFlowExecutionId(UUID originalFlowExecutionId);
-    
-    @Query("SELECT pe FROM PipelineExecution pe WHERE pe.flowExecutionId = :flowExecutionId OR pe.originalFlowExecutionId = :flowExecutionId ORDER BY pe.createdAt")
+    // Methods to support replay functionality - simplified since originalFlowExecutionId was removed
+    @Query("SELECT pe FROM PipelineExecution pe WHERE pe.flowExecutionId = :flowExecutionId ORDER BY pe.createdAt")
     List<PipelineExecution> findByFlowExecutionIdIncludingReplays(@Param("flowExecutionId") UUID flowExecutionId);
-    
+
     @Query("SELECT pe FROM PipelineExecution pe WHERE pe.flowStepId = :flowStepId ORDER BY pe.createdAt")
     List<PipelineExecution> findByFlowStepIdIncludingReplays(@Param("flowStepId") Long flowStepId);
     

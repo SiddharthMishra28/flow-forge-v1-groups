@@ -8,6 +8,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -81,14 +82,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
         logger.error("Validation error: {}", ex.getMessage());
-        
+
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach((error) -> {
             String fieldName = ((FieldError) error).getField();
             String errorMessage = error.getDefaultMessage();
             errors.put(fieldName, errorMessage);
         });
-        
+
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
                 "Validation Failed",
@@ -96,8 +97,26 @@ public class GlobalExceptionHandler {
                 LocalDateTime.now(),
                 errors
         );
-        
+
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
+    public ResponseEntity<ErrorResponse> handleResponseStatusException(org.springframework.web.server.ResponseStatusException ex) {
+        logger.error("ResponseStatusException: {} - {}", ex.getStatusCode(), ex.getMessage());
+
+        int statusCode = ex.getStatusCode().value();
+        HttpStatus status = HttpStatus.valueOf(statusCode);
+        String errorType = status.getReasonPhrase();
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                status.value(),
+                errorType,
+                ex.getReason() != null ? ex.getReason() : ex.getMessage(),
+                LocalDateTime.now()
+        );
+
+        return new ResponseEntity<>(errorResponse, status);
     }
 
     @ExceptionHandler(RuntimeException.class)

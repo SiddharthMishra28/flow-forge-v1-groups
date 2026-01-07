@@ -3,6 +3,7 @@ package com.ubs.orkestra.service;
 import com.ubs.orkestra.dto.TestDataDto;
 import com.ubs.orkestra.model.TestData;
 import com.ubs.orkestra.repository.ApplicationRepository;
+import com.ubs.orkestra.repository.FlowStepRepository;
 import com.ubs.orkestra.repository.TestDataRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -26,6 +27,9 @@ public class TestDataService {
 
     @Autowired
     private ApplicationRepository applicationRepository;
+
+    @Autowired
+    private FlowStepRepository flowStepRepository;
 
     public TestDataDto createTestData(TestDataDto testDataDto) {
         if (testDataDto.getApplicationId() == null || !applicationRepository.existsById(testDataDto.getApplicationId())) {
@@ -116,6 +120,13 @@ public class TestDataService {
         if (!testDataRepository.existsById(dataId)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "TestData not found with id: " + dataId);
         }
+
+        // Check if TestData is being used by any FlowStep
+        if (flowStepRepository.existsByTestDataId(dataId.toString())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                "Cannot delete TestData with id: " + dataId + ". It is currently referenced by one or more FlowSteps.");
+        }
+
         testDataRepository.deleteById(dataId);
     }
 
@@ -126,6 +137,18 @@ public class TestDataService {
         return testDataRepository.findByApplicationId(applicationId).stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
+    }
+
+    public List<TestDataDto> searchTestData(String applicationName, String category, String description) {
+        return testDataRepository.searchByFilters(applicationName, category, description)
+                .stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    public Page<TestDataDto> searchTestData(String applicationName, String category, String description, Pageable pageable) {
+        return testDataRepository.searchByFilters(applicationName, category, description, pageable)
+                .map(this::convertToDto);
     }
 
     /**

@@ -12,6 +12,7 @@ public class PipelineExecutionDto {
     private Long flowId;
     private UUID flowExecutionId;
     private Long flowStepId;
+    private String applicationName;
     private Long pipelineId;
     private String pipelineUrl;
     private LocalDateTime startTime;
@@ -21,7 +22,6 @@ public class PipelineExecutionDto {
     private ExecutionStatus status;
     private LocalDateTime createdAt;
     private Boolean isReplay;
-    private UUID originalFlowExecutionId;
     private LocalDateTime resumeTime;
 
     // Constructors
@@ -65,6 +65,14 @@ public class PipelineExecutionDto {
 
     public void setFlowStepId(Long flowStepId) {
         this.flowStepId = flowStepId;
+    }
+
+    public String getApplicationName() {
+        return applicationName;
+    }
+
+    public void setApplicationName(String applicationName) {
+        this.applicationName = applicationName;
     }
 
     public Long getPipelineId() {
@@ -139,14 +147,6 @@ public class PipelineExecutionDto {
 
     public void setIsReplay(Boolean isReplay) {
         this.isReplay = isReplay;
-    }
-
-    public UUID getOriginalFlowExecutionId() {
-        return originalFlowExecutionId;
-    }
-
-    public void setOriginalFlowExecutionId(UUID originalFlowExecutionId) {
-        this.originalFlowExecutionId = originalFlowExecutionId;
     }
 
     public LocalDateTime getResumeTime() {
