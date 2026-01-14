@@ -98,5 +98,26 @@ public interface FlowExecutionRepository extends JpaRepository<FlowExecution, UU
            "OR LOWER(f.squashTestCase) LIKE LOWER(CONCAT('%', :term, '%')))" )
     Page<FlowExecution> searchByFlowIds(@Param("flowIds") List<Long> flowIds, @Param("term") String term, Pageable pageable);
 
+    @Query("""
+        SELECT fe FROM FlowExecution fe
+        LEFT JOIN FlowGroup fg ON fe.flowGroupId = fg.id
+        WHERE (:executionId IS NULL OR fe.id = :executionId)
+        AND (:flowId IS NULL OR fe.flowId = :flowId)
+        AND (:flowGroupId IS NULL OR fe.flowGroupId = :flowGroupId)
+        AND (:flowGroupName IS NULL OR LOWER(fg.flowGroupName) LIKE LOWER(CONCAT('%', :flowGroupName, '%')))
+        AND (:iteration IS NULL OR fe.iteration = :iteration)
+        AND (:fromDate IS NULL OR fe.createdAt >= :fromDate)
+        AND (:toDate IS NULL OR fe.createdAt <= :toDate)
+        """)
+    Page<FlowExecution> findByAdvancedSearchCriteria(
+        @Param("executionId") UUID executionId,
+        @Param("flowId") Long flowId,
+        @Param("flowGroupId") Long flowGroupId,
+        @Param("flowGroupName") String flowGroupName,
+        @Param("iteration") Integer iteration,
+        @Param("fromDate") LocalDateTime fromDate,
+        @Param("toDate") LocalDateTime toDate,
+        Pageable pageable
+    );
 
 }
