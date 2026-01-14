@@ -202,82 +202,17 @@ public class FlowExecutionService {
     public Page<FlowExecutionDto> searchFlowExecutionsAdvanced(UUID executionId, Long flowId, String flowGroupName, Long flowGroupId, Integer iteration, LocalDateTime fromDate, LocalDateTime toDate, Pageable pageable) {
         logger.debug("Advanced search flow executions with filters: executionId={}, flowId={}, flowGroupName={}, flowGroupId={}, iteration={}, fromDate={}, toDate={}", executionId, flowId, flowGroupName, flowGroupId, iteration, fromDate, toDate);
 
-        // First, find FlowGroup IDs if flowGroupName is provided
-        List<Long> flowGroupIdsFromName = null;
-        if (flowGroupName != null && !flowGroupName.trim().isEmpty()) {
-            flowGroupIdsFromName = flowGroupRepository.findAll().stream()
-                    .filter(fg -> fg.getFlowGroupName() != null &&
-                            fg.getFlowGroupName().toLowerCase().contains(flowGroupName.toLowerCase().trim()))
-                    .map(FlowGroup::getId)
-                    .collect(Collectors.toList());
-
-            // If no flow groups match the name, return empty result
-            if (flowGroupIdsFromName.isEmpty()) {
-                return new PageImpl<>(Collections.emptyList(), pageable, 0);
-            }
-        }
-
-        // Build final flowGroupIds list (effectively final for lambda use)
-        final List<Long> flowGroupIds;
-        if (flowGroupIdsFromName != null && flowGroupId != null) {
-            flowGroupIds = new ArrayList<>(flowGroupIdsFromName);
-            if (!flowGroupIds.contains(flowGroupId)) {
-                flowGroupIds.add(flowGroupId);
-            }
-        } else if (flowGroupIdsFromName != null) {
-            flowGroupIds = flowGroupIdsFromName;
-        } else if (flowGroupId != null) {
-            flowGroupIds = Collections.singletonList(flowGroupId);
-        } else {
-            flowGroupIds = null;
-        }
-
-        // Build dynamic query using JPA Criteria or Specifications
-        // For now, use a simpler approach with multiple repository calls
-        List<FlowExecution> allMatchingExecutions = new ArrayList<>();
-
-        if (executionId != null) {
-            // If executionId is specified, it's a direct lookup
-            flowExecutionRepository.findById(executionId).ifPresent(allMatchingExecutions::add);
-        } else {
-            // Build query based on other filters
-            List<FlowExecution> candidateExecutions = new ArrayList<>();
-
-            // Start with executions filtered by basic criteria
-            if (flowId != null) {
-                candidateExecutions.addAll(flowExecutionRepository.findByFlowId(flowId));
-            } else {
-                // Get all executions - this might need optimization for large datasets
-                candidateExecutions.addAll(flowExecutionRepository.findAll());
-            }
-
-            // Apply filters
-            List<FlowExecution> filteredExecutions = candidateExecutions.stream()
-                    .filter(fe -> flowGroupIds == null || flowGroupIds.contains(fe.getFlowGroupId()))
-                    .filter(fe -> iteration == null || Objects.equals(fe.getIteration(), iteration))
-                    .filter(fe -> fromDate == null || fe.getCreatedAt().isAfter(fromDate) || fe.getCreatedAt().isEqual(fromDate))
-                    .filter(fe -> toDate == null || fe.getCreatedAt().isBefore(toDate) || fe.getCreatedAt().isEqual(toDate))
-                    .collect(Collectors.toList());
-
-            allMatchingExecutions.addAll(filteredExecutions);
-        }
-
-        // Apply pagination
-        int start = (int) pageable.getOffset();
-        int end = Math.min(start + pageable.getPageSize(), allMatchingExecutions.size());
-
-        if (start >= allMatchingExecutions.size()) {
-            return new PageImpl<>(Collections.emptyList(), pageable, allMatchingExecutions.size());
-        }
-
-        List<FlowExecution> pageContent = allMatchingExecutions.subList(start, end);
+        // Use JPA Specification for efficient database-level filtering
+        Page<FlowExecution> flowExecutionsPage = flowExecutionRepository.findAll(
+            FlowExecutionSpecification.withFilters(executionId, flowId, flowGroupId, flowGroupName, iteration, fromDate, toDate),
+            pageable);
 
         // Convert to DTOs with details
-        List<FlowExecutionDto> dtos = pageContent.stream()
+        List<FlowExecutionDto> dtos = flowExecutionsPage.getContent().stream()
                 .map(this::convertToDtoWithDetails)
                 .collect(Collectors.toList());
 
-        return new PageImpl<>(dtos, pageable, allMatchingExecutions.size());
+        return new PageImpl<>(dtos, pageable, flowExecutionsPage.getTotalElements());
     }
 
     public Page<FlowExecutionDto> getAllFlowExecutions(Pageable pageable) {

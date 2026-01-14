@@ -4,6 +4,7 @@ import com.ubs.orkestra.enums.ExecutionStatus;
 import com.ubs.orkestra.model.FlowExecution;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -98,5 +99,6 @@ public interface FlowExecutionRepository extends JpaRepository<FlowExecution, UU
            "OR LOWER(f.squashTestCase) LIKE LOWER(CONCAT('%', :term, '%')))" )
     Page<FlowExecution> searchByFlowIds(@Param("flowIds") List<Long> flowIds, @Param("term") String term, Pageable pageable);
 
+    Page<FlowExecution> findAll(Specification<FlowExecution> spec, Pageable pageable);
 
 }

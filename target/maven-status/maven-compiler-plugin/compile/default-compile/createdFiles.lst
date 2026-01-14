@@ -18,6 +18,7 @@ com\ubs\orkestra\validator\ValidInvokeScheduler.class
 com\ubs\orkestra\util\GitLabApiClient.class
 com\ubs\orkestra\dto\FlowGroupDetailsDto$FlowGroupDetail.class
 com\ubs\orkestra\dto\InvokeSchedulerDto.class
+com\ubs\orkestra\repository\FlowExecutionSpecification.class
 com\ubs\orkestra\model\Delay.class
 com\ubs\orkestra\repository\FlowExecutionRepository.class
 com\ubs\orkestra\model\TestData.class

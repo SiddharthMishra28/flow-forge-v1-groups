@@ -16,7 +16,7 @@ import java.util.UUID;
 public class FlowExecution {
 
     @Id
-    @Column(name = "id", updatable = false, nullable = false)
+    @Column(name = "id", updatable = false, nullable = false, columnDefinition = "uuid")
     private UUID id;
 
     @NotNull
@@ -41,11 +41,15 @@ public class FlowExecution {
     @Column(name = "is_replay")
     private Boolean isReplay = Boolean.FALSE;
 
-    @Column(name = "original_flow_execution_id")
+    @Column(name = "original_flow_execution_id", columnDefinition = "uuid")
     private UUID originalFlowExecutionId;
 
     @Column(name = "category")
     private String category;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "flow_group_id", insertable = false, updatable = false)
+    private FlowGroup flowGroup;
 
     @Column(name = "flow_group_id")
     private Long flowGroupId;
