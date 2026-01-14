@@ -411,6 +411,12 @@ public class FlowExecutionService {
                 logger.debug("Added testTag '{}' to pipeline variables for first step {}", step.getTestTag(), step.getId());
             }
 
+            // Add flowExecutionUuid and applicationName to make them available in GitLab pipeline scope
+            pipelineVariables.put("EXECUTION_UUID", flowExecution.getId().toString());
+            pipelineVariables.put("APP_NAME", application.getApplicationName());
+            logger.debug("Added EXECUTION_UUID '{}' and APP_NAME '{}' to pipeline variables for first step {}",
+                        flowExecution.getId(), application.getApplicationName(), step.getId());
+
             // Save the pipeline execution record first
             pipelineExecution.setStatus(ExecutionStatus.RUNNING);
             pipelineExecution.setStartTime(LocalDateTime.now());
@@ -1190,6 +1196,12 @@ public class FlowExecutionService {
             logger.debug("Added testTag '{}' to replay pipeline variables for step {}", step.getTestTag(), step.getId());
         }
 
+        // Add flowExecutionUuid and applicationName to make them available in GitLab pipeline scope
+        mergedVariables.put("EXECUTION_UUID", flowExecution.getId().toString());
+        mergedVariables.put("APP_NAME", application.getApplicationName());
+        logger.debug("Added EXECUTION_UUID '{}' and APP_NAME '{}' to replay pipeline variables for step {}",
+                    flowExecution.getId(), application.getApplicationName(), step.getId());
+
         // Find existing pipeline execution record created in createReplayFlowExecution
         PipelineExecution pipelineExecution = pipelineExecutionRepository
                 .findByFlowExecutionIdAndFlowStepId(flowExecution.getId(), step.getId())
@@ -1296,6 +1308,12 @@ public class FlowExecutionService {
             mergedVariables.put("testTag", step.getTestTag());
             logger.debug("Added testTag '{}' to pipeline variables for step {}", step.getTestTag(), step.getId());
         }
+
+        // Add flowExecutionUuid and applicationName to make them available in GitLab pipeline scope
+        mergedVariables.put("EXECUTION_UUID", flowExecution.getId().toString());
+        mergedVariables.put("APP_NAME", application.getApplicationName());
+        logger.debug("Added EXECUTION_UUID '{}' and APP_NAME '{}' to pipeline variables for step {}",
+                    flowExecution.getId(), application.getApplicationName(), step.getId());
 
         // Use the provided existing pipeline execution record
         PipelineExecution pipelineExecution = existingPipelineExecution;
