@@ -16,7 +16,8 @@ import java.util.UUID;
 public class PipelineExecution {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pipeline_executions_id_seq")
+    @SequenceGenerator(name = "pipeline_executions_id_seq", sequenceName = "pipeline_executions_id_seq", allocationSize = 1)
     private Long id;
 
     @NotNull
