@@ -4,6 +4,7 @@ import com.ubs.orkestra.enums.ExecutionStatus;
 import com.ubs.orkestra.model.FlowExecution;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -98,23 +99,6 @@ public interface FlowExecutionRepository extends JpaRepository<FlowExecution, UU
            "OR LOWER(f.squashTestCase) LIKE LOWER(CONCAT('%', :term, '%')))" )
     Page<FlowExecution> searchByFlowIds(@Param("flowIds") List<Long> flowIds, @Param("term") String term, Pageable pageable);
 
-    @Query(value = """
-        SELECT * FROM flow_executions fe
-        WHERE (:executionId IS NULL OR fe.id = CAST(:executionId AS uuid))
-        AND (:flowId IS NULL OR fe.flow_id = :flowId)
-        AND (:flowGroupId IS NULL OR fe.flow_group_id = :flowGroupId)
-        AND (:iteration IS NULL OR fe.iteration = :iteration)
-        AND (:fromDate IS NULL OR fe.created_at >= :fromDate)
-        AND (:toDate IS NULL OR fe.created_at <= :toDate)
-        """, nativeQuery = true)
-    Page<FlowExecution> findByAdvancedSearchCriteria(
-        @Param("executionId") String executionId,
-        @Param("flowId") Long flowId,
-        @Param("flowGroupId") Long flowGroupId,
-        @Param("iteration") Integer iteration,
-        @Param("fromDate") LocalDateTime fromDate,
-        @Param("toDate") LocalDateTime toDate,
-        Pageable pageable
-    );
+    Page<FlowExecution> findAll(Specification<FlowExecution> spec, Pageable pageable);
 
 }

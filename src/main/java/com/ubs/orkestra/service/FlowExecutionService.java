@@ -202,43 +202,17 @@ public class FlowExecutionService {
     public Page<FlowExecutionDto> searchFlowExecutionsAdvanced(UUID executionId, Long flowId, String flowGroupName, Long flowGroupId, Integer iteration, LocalDateTime fromDate, LocalDateTime toDate, Pageable pageable) {
         logger.debug("Advanced search flow executions with filters: executionId={}, flowId={}, flowGroupName={}, flowGroupId={}, iteration={}, fromDate={}, toDate={}", executionId, flowId, flowGroupName, flowGroupId, iteration, fromDate, toDate);
 
-        // First, get database-level filtered results without flowGroupName
-        // Convert UUID to string for PostgreSQL compatibility
-        String executionIdStr = executionId != null ? executionId.toString() : null;
-        Page<FlowExecution> flowExecutionsPage = flowExecutionRepository.findByAdvancedSearchCriteria(
-            executionIdStr, flowId, flowGroupId, iteration, fromDate, toDate, pageable);
-
-        // Apply flowGroupName filtering in-memory if needed
-        List<FlowExecution> filteredExecutions = flowExecutionsPage.getContent();
-        if (flowGroupName != null && !flowGroupName.trim().isEmpty()) {
-            String normalizedFlowGroupName = flowGroupName.trim().toLowerCase();
-            filteredExecutions = filteredExecutions.stream()
-                    .filter(fe -> {
-                        if (fe.getFlowGroupId() == null) {
-                            return false; // No flow group, can't match name
-                        }
-                        return flowGroupRepository.findById(fe.getFlowGroupId())
-                                .map(fg -> fg.getFlowGroupName() != null &&
-                                         fg.getFlowGroupName().toLowerCase().contains(normalizedFlowGroupName))
-                                .orElse(false);
-                    })
-                    .collect(Collectors.toList());
-        }
+        // Use JPA Specification for efficient database-level filtering
+        Page<FlowExecution> flowExecutionsPage = flowExecutionRepository.findAll(
+            FlowExecutionSpecification.withFilters(executionId, flowId, flowGroupId, flowGroupName, iteration, fromDate, toDate),
+            pageable);
 
         // Convert to DTOs with details
-        List<FlowExecutionDto> dtos = filteredExecutions.stream()
+        List<FlowExecutionDto> dtos = flowExecutionsPage.getContent().stream()
                 .map(this::convertToDtoWithDetails)
                 .collect(Collectors.toList());
 
-        // Calculate correct total elements for pagination metadata
-        long totalElements = flowExecutionsPage.getTotalElements();
-        if (flowGroupName != null && !flowGroupName.trim().isEmpty()) {
-            // If we applied in-memory filtering, we need to adjust the total count
-            // This is a limitation of mixing database and in-memory filtering
-            totalElements = Math.min(totalElements, filteredExecutions.size() + (flowExecutionsPage.getNumber() * flowExecutionsPage.getSize()));
-        }
-
-        return new PageImpl<>(dtos, pageable, totalElements);
+        return new PageImpl<>(dtos, pageable, flowExecutionsPage.getTotalElements());
     }
 
     public Page<FlowExecutionDto> getAllFlowExecutions(Pageable pageable) {

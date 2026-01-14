@@ -47,6 +47,10 @@ public class FlowExecution {
     @Column(name = "category")
     private String category;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "flow_group_id", insertable = false, updatable = false)
+    private FlowGroup flowGroup;
+
     @Column(name = "flow_group_id")
     private Long flowGroupId;
 
