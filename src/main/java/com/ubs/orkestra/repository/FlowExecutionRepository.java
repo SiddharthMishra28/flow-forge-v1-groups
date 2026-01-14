@@ -98,17 +98,17 @@ public interface FlowExecutionRepository extends JpaRepository<FlowExecution, UU
            "OR LOWER(f.squashTestCase) LIKE LOWER(CONCAT('%', :term, '%')))" )
     Page<FlowExecution> searchByFlowIds(@Param("flowIds") List<Long> flowIds, @Param("term") String term, Pageable pageable);
 
-    @Query("""
-        SELECT fe FROM FlowExecution fe
-        WHERE (:executionId IS NULL OR fe.id = :executionId)
-        AND (:flowId IS NULL OR fe.flowId = :flowId)
-        AND (:flowGroupId IS NULL OR fe.flowGroupId = :flowGroupId)
+    @Query(value = """
+        SELECT * FROM flow_executions fe
+        WHERE (:executionId IS NULL OR fe.id = CAST(:executionId AS uuid))
+        AND (:flowId IS NULL OR fe.flow_id = :flowId)
+        AND (:flowGroupId IS NULL OR fe.flow_group_id = :flowGroupId)
         AND (:iteration IS NULL OR fe.iteration = :iteration)
-        AND (:fromDate IS NULL OR fe.createdAt >= :fromDate)
-        AND (:toDate IS NULL OR fe.createdAt <= :toDate)
-        """)
+        AND (:fromDate IS NULL OR fe.created_at >= :fromDate)
+        AND (:toDate IS NULL OR fe.created_at <= :toDate)
+        """, nativeQuery = true)
     Page<FlowExecution> findByAdvancedSearchCriteria(
-        @Param("executionId") UUID executionId,
+        @Param("executionId") String executionId,
         @Param("flowId") Long flowId,
         @Param("flowGroupId") Long flowGroupId,
         @Param("iteration") Integer iteration,

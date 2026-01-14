@@ -203,8 +203,10 @@ public class FlowExecutionService {
         logger.debug("Advanced search flow executions with filters: executionId={}, flowId={}, flowGroupName={}, flowGroupId={}, iteration={}, fromDate={}, toDate={}", executionId, flowId, flowGroupName, flowGroupId, iteration, fromDate, toDate);
 
         // First, get database-level filtered results without flowGroupName
+        // Convert UUID to string for PostgreSQL compatibility
+        String executionIdStr = executionId != null ? executionId.toString() : null;
         Page<FlowExecution> flowExecutionsPage = flowExecutionRepository.findByAdvancedSearchCriteria(
-            executionId, flowId, flowGroupId, iteration, fromDate, toDate, pageable);
+            executionIdStr, flowId, flowGroupId, iteration, fromDate, toDate, pageable);
 
         // Apply flowGroupName filtering in-memory if needed
         List<FlowExecution> filteredExecutions = flowExecutionsPage.getContent();
