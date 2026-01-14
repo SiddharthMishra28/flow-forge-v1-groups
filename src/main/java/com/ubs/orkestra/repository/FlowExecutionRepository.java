@@ -104,7 +104,7 @@ public interface FlowExecutionRepository extends JpaRepository<FlowExecution, UU
         WHERE (:executionId IS NULL OR fe.id = :executionId)
         AND (:flowId IS NULL OR fe.flowId = :flowId)
         AND (:flowGroupId IS NULL OR fe.flowGroupId = :flowGroupId)
-        AND (:flowGroupName IS NULL OR LOWER(fg.flowGroupName) LIKE LOWER(CONCAT('%', :flowGroupName, '%')))
+        AND (:flowGroupName IS NULL OR LOWER(fg.flowGroupName) LIKE LOWER('%' || :flowGroupName || '%'))
         AND (:iteration IS NULL OR fe.iteration = :iteration)
         AND (:fromDate IS NULL OR fe.createdAt >= :fromDate)
         AND (:toDate IS NULL OR fe.createdAt <= :toDate)
